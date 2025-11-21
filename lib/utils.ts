@@ -1,3 +1,5 @@
+import { CalendarData } from "@/types";
+
 export const formatISO = (year: number, month: number, day: number): string => {
   const mm = String(month + 1).padStart(2, "0");
   const dd = String(day).padStart(2, "0");

@@ -8,6 +8,7 @@ export default function ContactForm() {
     name: "",
     email: "",
     message: "",
+    phone: "",
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -20,7 +21,7 @@ export default function ContactForm() {
     // Simulate success feedback
     setTimeout(() => {
       setFormSubmitted(false);
-      setFormData({ name: "", email: "", message: "" });
+      setFormData({ name: "", email: "", message: "",phone:"" });
     }, 2000);
   };
 
@@ -49,6 +50,17 @@ export default function ContactForm() {
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           className="mt-2 w-full rounded-lg border focus:outline-none border-gray-300 p-3 shadow-sm focus:ring-2 focus:ring-purple-600 focus:border-transparent"
           placeholder="votre@email.com"
+        />
+      </div>
+      {/* Phone */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Phone</label>
+        <input
+          type="text"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          className="mt-2 w-full rounded-lg border focus:outline-none border-gray-300 p-3 shadow-sm focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+          placeholder="+33 6 12 34 56 78"
         />
       </div>
 
