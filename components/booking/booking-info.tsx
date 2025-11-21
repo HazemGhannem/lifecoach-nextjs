@@ -4,11 +4,14 @@ export default function BookingInfo() {
   return (
     <div>
       <div className="bg-white rounded-lg shadow p-6">
-        <h4 className="font-semibold mb-3">Quick Info</h4>
+        <h4 className="font-semibold mb-3">Informations</h4>
         <p className="text-sm text-gray-600 mb-4">
-          Sessions are 60 minutes. Choose a date then a time and press
-          "Reserve". You will receive a confirmation here. For payment and final
-          confirmation we will contact you by email.
+          Les séances durent 40 minutes. Choisissez une date puis une heure et
+          appuyez sur "Réserver". Vous recevrez une confirmation ici. Pour le
+          paiement et la confirmation finale, nous vous contacterons par email.
+        </p>
+        <p className="text-sm text-purple-600 font-medium mb-4">
+          ✨ Première séance de 15 min gratuite
         </p>
 
         <div className="space-y-3">
@@ -16,29 +19,32 @@ export default function BookingInfo() {
             <Mail className="h-5 w-5 text-purple-600" />
             <a
               className="text-sm text-gray-700 hover:text-purple-600"
-              href="mailto:sarah@example.com"
+              href="mailto:contact@leopoldine-almeida.com"
             >
-              sarah@example.com
+              contact@leopoldine-almeida.com
             </a>
           </div>
           <div className="flex items-center gap-2">
             <Phone className="h-5 w-5 text-purple-600" />
             <a
               className="text-sm text-gray-700 hover:text-purple-600"
-              href="tel:+1234567890"
+              href="tel:+33123456789"
             >
-              +1 234 567 890
+              +33 1 23 45 67 89
             </a>
           </div>
         </div>
       </div>
 
       <div className="mt-6 bg-white rounded-lg shadow p-6">
-        <h4 className="font-semibold mb-3">How it works</h4>
+        <h4 className="font-semibold mb-3">Comment ça marche</h4>
         <ol className="list-decimal list-inside text-sm text-gray-600 space-y-1">
-          <li>Pick a date</li>
-          <li>Choose a time</li>
-          <li>Reserve (we'll email you to confirm & process payment)</li>
+          <li>Choisissez une date</li>
+          <li>Sélectionnez une heure</li>
+          <li>
+            Réservez (nous vous contacterons par email pour confirmer et traiter
+            le paiement)
+          </li>
         </ol>
       </div>
     </div>

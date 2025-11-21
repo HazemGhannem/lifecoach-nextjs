@@ -8,7 +8,7 @@ interface CalendarProps {
   onSelectDate: (date: string) => void;
 }
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
 export default function Calendar({
   calendarData,
@@ -22,7 +22,7 @@ export default function Calendar({
     <>
       <div className="flex items-center mb-4">
         <CalendarIcon className="h-6 w-6 text-purple-600 mr-2" />
-        <h3 className="text-lg font-semibold">Select a Date</h3>
+        <h3 className="text-lg font-semibold">Sélectionner une Date</h3>
       </div>
 
       <div className="grid grid-cols-7 gap-2 text-center text-sm">

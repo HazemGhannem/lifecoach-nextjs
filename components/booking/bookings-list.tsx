@@ -12,9 +12,9 @@ export default function BookingsList({
 }: BookingsListProps) {
   return (
     <div className="mt-6 bg-white rounded-lg shadow p-6">
-      <h4 className="font-semibold mb-4">Upcoming Bookings</h4>
+      <h4 className="font-semibold mb-4">Réservations à Venir</h4>
       {bookings.length === 0 ? (
-        <p className="text-gray-500">No bookings yet.</p>
+        <p className="text-gray-500">Aucune réservation pour le moment.</p>
       ) : (
         <ul className="space-y-3">
           {bookings.map((booking, i) => (
@@ -33,7 +33,7 @@ export default function BookingsList({
                 onClick={() => onCancel(i)}
                 className="text-sm text-red-500 hover:text-red-700 transition"
               >
-                Cancel
+                Annuler
               </button>
             </li>
           ))}

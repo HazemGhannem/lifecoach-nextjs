@@ -10,8 +10,8 @@ export default function Navigation() {
   const pathname = usePathname();
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/booking", label: "Book Session" },
+    { href: "/", label: "Accueil" },
+    { href: "/booking", label: "Réserver" },
     { href: "/contact", label: "Contact" },
   ];
 
@@ -27,7 +27,7 @@ export default function Navigation() {
           <Link href="/" className="flex items-center">
             <Heart className="h-8 w-8 text-purple-600" />
             <span className="ml-2 text-2xl font-bold text-gray-800">
-              Sarah Miller
+              Léopoldine Almeida
             </span>
           </Link>
 

@@ -27,9 +27,9 @@ export default function BookingPage() {
   const calendarData = useMemo(() => getCalendarData(), []);
 
   return (
-    <div className="pt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="pt-22 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h2 className="text-3xl font-bold text-gray-800 mb-6">
-        Reserve a Session
+        Réserver une Séance
       </h2>
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
@@ -61,12 +61,12 @@ export default function BookingPage() {
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                Reserve
+                Réserver
               </button>
               {showConfirmation && (
                 <div className="inline-flex items-center gap-2 text-green-600">
                   <CheckCircle className="h-5 w-5" />
-                  <span>Booked!</span>
+                  <span>Réservé !</span>
                 </div>
               )}
             </div>

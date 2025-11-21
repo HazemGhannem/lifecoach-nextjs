@@ -30,7 +30,7 @@ export default function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700">Name</label>
+        <label className="block text-sm font-medium text-gray-700">Nom</label>
         <input
           type="text"
           value={formData.name}
@@ -73,24 +73,24 @@ export default function ContactForm() {
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
           }`}
         >
-          Send Message
+          Envoyer le Message
         </button>
 
         {formSubmitted && (
           <div className="inline-flex items-center gap-2 text-green-600">
             <CheckCircle className="h-5 w-5" />
-            <span>Message sent!</span>
+            <span>Message envoyé !</span>
           </div>
         )}
       </div>
 
       <div className="pt-4 text-sm text-gray-500">
-        Or email directly:{" "}
+        Ou écrivez directement :{" "}
         <a
-          href="mailto:sarah@example.com"
+          href="mailto:contact@leopoldine-almeida.com"
           className="text-purple-600 hover:text-purple-700"
         >
-          sarah@example.com
+          contact@leopoldine-almeida.com
         </a>
       </div>
     </form>

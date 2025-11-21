@@ -1,49 +1,57 @@
-import { CheckCircle, Star } from "lucide-react";
+import { CheckCircle, Star, Sparkles } from "lucide-react";
 
 export default function AboutSection() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div>
-          <h2 className="text-4xl font-bold text-gray-800 mb-6">
-            Meet Sarah Miller
-          </h2>
+          <h2 className="text-4xl font-bold text-gray-800 mb-6">Qui Je Suis</h2>
           <p className="text-lg text-gray-600 mb-4">
-            With over 10 years of experience in life coaching and personal
-            development, I help individuals discover their true potential and
-            create meaningful change in their lives.
+            Bonjour, je suis <strong>Léopoldine Almeida</strong>, coach de vie
+            spécialisée dans l'accompagnement des personnes qui souhaitent
+            retrouver clarté, confiance et équilibre.
+          </p>
+          <p className="text-lg text-gray-600 mb-4">
+            J'aide mes clients à dépasser leurs blocages, à définir des
+            objectifs alignés avec leurs valeurs et à construire une vie plus
+            sereine et plus engagée.
           </p>
           <p className="text-lg text-gray-600 mb-6">
-            My holistic approach combines proven coaching techniques with
-            mindfulness practices to help you achieve your goals and live a more
-            fulfilling life.
+            Mon approche est à la fois bienveillante, stratégique et concrète,
+            pour transformer vos prises de conscience en résultats durables.
           </p>
           <div className="space-y-4">
             <div className="flex items-center">
-              <CheckCircle className="h-6 w-6 text-purple-600 mr-3" />
+              <CheckCircle className="h-6 w-6 text-purple-600 mr-3 flex-shrink-0" />
               <span className="text-gray-700">
-                Certified Professional Life Coach
+                Approche holistique et personnalisée
               </span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="h-6 w-6 text-purple-600 mr-3" />
-              <span className="text-gray-700">500+ Clients Transformed</span>
+              <CheckCircle className="h-6 w-6 text-purple-600 mr-3 flex-shrink-0" />
+              <span className="text-gray-700">
+                Intelligence émotionnelle au cœur du coaching
+              </span>
             </div>
             <div className="flex items-center">
-              <CheckCircle className="h-6 w-6 text-purple-600 mr-3" />
+              <CheckCircle className="h-6 w-6 text-purple-600 mr-3 flex-shrink-0" />
               <span className="text-gray-700">
-                Specializing in Career & Personal Growth
+                Stratégies concrètes pour des résultats durables
               </span>
             </div>
           </div>
         </div>
         <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-8 h-96 flex items-center justify-center">
           <div className="text-center">
-            <Star className="h-24 w-24 text-purple-600 mx-auto mb-4" />
-            <p className="text-gray-600 italic">
-              "Sarah changed my life completely!"
+            <Sparkles className="h-24 w-24 text-purple-600 mx-auto mb-4" />
+            <p className="text-gray-700 italic text-lg font-medium mb-2">
+              "Les sirènes naissent de la contrainte dont elles s'extraient
+              autant que de la liberté qu'elles s'offrent."
             </p>
-            <p className="text-sm text-gray-500 mt-2">- Happy Client</p>
+            <p className="text-sm text-gray-600 mt-4">
+              Je crois en la puissance de la pluralité et au réveil de votre
+              essence véritable.
+            </p>
           </div>
         </div>
       </div>

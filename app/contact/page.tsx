@@ -6,7 +6,7 @@ export default function ContactPage() {
       <div className="bg-white rounded-lg shadow p-8">
         <h2 className="text-2xl font-bold mb-4">Contact</h2>
         <p className="text-sm text-gray-600 mb-6">
-          Send a message and I'll get back to you within 48 hours.
+          Envoyez-moi un message et je vous répondrai dans les 48 heures.
         </p>
         <ContactForm />
       </div>
