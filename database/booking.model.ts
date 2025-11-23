@@ -7,7 +7,7 @@ export interface IBooking extends Document {
   date: string; // Format: YYYY-MM-DD
   time: string; // Format: HH:MM
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
-  notes?: string;
+  message?: string;
   package?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,7 +46,7 @@ const BookingSchema = new Schema<IBooking>(
       enum: ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"],
       default: "PENDING",
     },
-    notes: {
+    message: {
       type: String,
       trim: true,
     },
@@ -87,7 +87,7 @@ BookingSchema.statics.findAvailableSlots = async function (date: string) {
     status: { $in: ["PENDING", "CONFIRMED"] },
   }).select("time");
 
-  return bookedSlots.map((booking) => booking.time);
+  return bookedSlots.map((booking:any) => booking.time);
 };
 
 const Booking = models.Booking || model<IBooking>("Booking", BookingSchema);

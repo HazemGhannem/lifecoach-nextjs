@@ -25,23 +25,33 @@ export default function BookingPage() {
     selectedDate,
     selectedTime,
     showConfirmation,
+    loading,
+    error,
     setSelectedDate,
     setSelectedTime,
+    setError,
     isDateBooked,
     handleBooking,
     cancelBooking,
-  } = useBookings();
+  } = useBookings(userInfo.email);
 
   const calendarData = useMemo(() => getCalendarData(), []);
 
   const handleReserverClick = () => {
     if (!selectedDate || !selectedTime) {
+      setError("Veuillez sélectionner une date et une heure");
       return;
     }
     setShowModal(true);
   };
 
-  const handleModalSubmit = async () => {};
+  const handleModalSubmit = async (data: { name: string; email: string; phone?: string }) => {
+    setUserInfo(data);
+    const success = await handleBooking(data);
+    if (success) {
+      setShowModal(false);
+    }
+  };
 
   return (
     <div className="pt-22 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,14 +59,29 @@ export default function BookingPage() {
         Réserver une Séance
       </h2>
 
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2 text-red-700">
+          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto text-red-500 hover:text-red-700"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
           <div className="bg-white rounded-lg shadow p-6">
             <Calendar
+              calendarData={calendarData}
               selectedDate={selectedDate}
               onSelectDate={(date) => {
                 setSelectedDate(date);
                 setSelectedTime(null);
+                setError(null);
               }}
             />
 
@@ -66,6 +91,7 @@ export default function BookingPage() {
               selectedTime={selectedTime}
               onSelectTime={(time) => {
                 setSelectedTime(time);
+                setError(null);
               }}
               isDateBooked={isDateBooked}
             />
@@ -73,14 +99,14 @@ export default function BookingPage() {
             <div className="mt-6 flex items-center gap-4">
               <button
                 onClick={handleReserverClick}
-                disabled={!selectedDate || !selectedTime}
+                disabled={!selectedDate || !selectedTime || loading}
                 className={`px-6 py-3 rounded-lg font-semibold ${
-                  selectedDate && selectedTime
+                  selectedDate && selectedTime && !loading
                     ? "bg-purple-600 text-white hover:bg-purple-700"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                Réserver
+                {loading ? "Chargement..." : "Réserver"}
               </button>
               {showConfirmation && (
                 <div className="inline-flex items-center gap-2 text-green-600 bg-green-50 px-4 py-2 rounded-lg">
@@ -92,7 +118,11 @@ export default function BookingPage() {
           </div>
 
           {userInfo.email && (
-            <BookingsList bookings={bookings} onCancel={cancelBooking} />
+            <BookingsList 
+              bookings={bookings} 
+              onCancel={cancelBooking}
+              loading={loading}
+            />
           )}
         </div>
 
@@ -106,6 +136,8 @@ export default function BookingPage() {
         onSubmit={handleModalSubmit}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
+        loading={loading}
+        error={error}
       />
     </div>
   );
