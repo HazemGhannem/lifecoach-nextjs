@@ -7,7 +7,7 @@ export interface IBooking extends Document {
   date: string; // Format: YYYY-MM-DD
   time: string; // Format: HH:MM
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
-  notes?: string;
+  message?: string;
   package?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,7 +46,7 @@ const BookingSchema = new Schema<IBooking>(
       enum: ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"],
       default: "PENDING",
     },
-    notes: {
+    message: {
       type: String,
       trim: true,
     },

@@ -2,6 +2,8 @@
 
 import { useState, FormEvent } from "react";
 import { X, Calendar, Clock, User, Mail, Phone } from "lucide-react";
+import { createBooking } from "@/api/bookingApi";
+import { CreateBookingInput } from "@/api/interface/Booking";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -14,7 +16,6 @@ interface BookingModalProps {
   selectedDate: string | null;
   selectedTime: string | null;
   loading?: boolean;
-  error?: string | null;
 }
 
 export default function BookingModal({
@@ -31,6 +32,9 @@ export default function BookingModal({
     email: "",
     phone: "",
   });
+  const [err, setErr] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -107,6 +111,18 @@ export default function BookingModal({
             </div>
           )}
 
+          {/* Messages */}
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700 mb-4">
+              ✅ Votre réservation a été confirmée !
+            </div>
+          )}
+          {err && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">
+              ❌ {err}
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
@@ -177,20 +193,11 @@ export default function BookingModal({
               </div>
             </div>
 
-            {/* Error message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
             {/* Info */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-xs text-blue-800">
-                ✨ <strong>Première séance de 15 min gratuite !</strong>
-                <br />
-                Vous recevrez un email de confirmation avec tous les détails.
-              </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+              ✨ <strong>Première séance de 15 min gratuite !</strong>
+              <br />
+              Vous recevrez un email de confirmation avec tous les détails.
             </div>
 
             {/* Buttons */}
@@ -205,10 +212,10 @@ export default function BookingModal({
               </button>
               <button
                 type="submit"
-                disabled={loading || !formData.name || !formData.email}
+                disabled={submitting || !formData.name || !formData.email}
                 className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Réservation..." : "Confirmer"}
+                {submitting ? "Réservation..." : "Confirmer"}
               </button>
             </div>
           </form>

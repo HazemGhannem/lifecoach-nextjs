@@ -158,5 +158,6 @@ export const useBookings = (userEmail?: string) => {
     isDateBooked,
     handleBooking,
     cancelBooking,
+    fetchBookings,
   };
 };
