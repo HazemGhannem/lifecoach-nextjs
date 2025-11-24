@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { CalendarData } from "@/types";
-import { formatISO, buildCalendarWeeks } from "@/lib/utils";
+import {
+  buildCalendarWeeks,
+  getCalendarData,
+  isPastDate,
+} from "@/lib/utils";
 
 interface CalendarProps {
   selectedDate: string | null;
+  currentYear: number;
+  currentMonth: number;
   onSelectDate: (date: string) => void;
+  goToNextMonth: () => void;
+  goToPreviousMonth: () => void;
+  isDayFullyBooked: (date: string) => boolean;
 }
 
 const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
@@ -28,41 +36,23 @@ const MONTHS = [
   "Décembre",
 ];
 
-const getCalendarData = (year: number, month: number): CalendarData => {
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  return { year, month, firstDay, daysInMonth };
-};
-
 export default function Calendar({
   selectedDate,
+  currentMonth,
+  currentYear,
   onSelectDate,
+  goToPreviousMonth,
+  goToNextMonth,
+  isDayFullyBooked,
 }: CalendarProps) {
-  const today = new Date();
-  const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
-
-  const calendarData = getCalendarData(currentYear, currentMonth);
-  const { year, month, firstDay, daysInMonth } = calendarData;
+  const calendarData = useMemo(
+    () => getCalendarData(currentYear, currentMonth),
+    []
+  );
+  const { year, month } = calendarData;
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const weeks = buildCalendarWeeks(firstDay, daysInMonth);
-
-  const goToPreviousMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
-  };
-
-  const goToNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
-  };
 
   return (
     <>
@@ -77,7 +67,6 @@ export default function Calendar({
           onClick={goToPreviousMonth}
           className="p-2 hover:bg-purple-100 rounded-full transition"
           aria-label="Mois précédent"
-          
         >
           <ChevronLeft className="h-5 w-5 text-purple-600" />
         </button>
@@ -106,16 +95,23 @@ export default function Calendar({
 
         {weeks.flat().map((day, idx) => {
           if (day === null) return <div key={idx} className="py-3" />;
-          const iso = formatISO(year, month, day);
+
+          const pad = (n: number) => n.toString().padStart(2, "0");
+          const iso = `${year}-${pad(month + 1)}-${pad(day)}`; // YYYY-MM-DD
+
+          const disabledDay =
+            isPastDate(currentYear, currentMonth, day) || isDayFullyBooked(iso); // Disable past or fully booked
+
           return (
             <button
               key={iso}
               onClick={() => onSelectDate(iso)}
+              disabled={disabledDay }
               className={`py-3 rounded-md transition ${
                 selectedDate === iso
-                  ? "bg-purple-600 text-white"
+                  ? "bg-purple-600 text-white border-transparent"
                   : "hover:bg-purple-50"
-              }`}
+              } ${disabledDay ? "opacity-40 cursor-not-allowed" : ""}`}
             >
               {day}
             </button>

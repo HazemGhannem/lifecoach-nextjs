@@ -6,7 +6,10 @@ import {
   getBookingsByEmail,
   cancelBooking as cancelBookingAction,
   getBookedSlots,
+  getBookingsByMonth,
 } from "@/lib/actions/booking.action";
+import { TIME_SLOTS } from "@/app/booking/page";
+import { sendEmail } from "@/lib/email";
 
 export interface Booking {
   _id: string;
@@ -21,6 +24,9 @@ export interface Booking {
 }
 
 export const useBookings = (userEmail?: string) => {
+  const today = new Date();
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -28,7 +34,20 @@ export const useBookings = (userEmail?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
-
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  useEffect(() => {
+    fetchAllBookings(currentYear, currentMonth + 1); // only call if selectedDate is not null
+  }, [currentMonth, currentYear]);
+  const fetchAllBookings = async (year: number, month: number) => {
+    try {
+      const result = await getBookingsByMonth(year, month); // implement this API call
+      if (result.success && result.bookings) {
+        setAllBookings(result.bookings);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   useEffect(() => {
     if (userEmail) {
       fetchBookings();
@@ -65,8 +84,17 @@ export const useBookings = (userEmail?: string) => {
     }
   };
 
-  const isDateBooked = (isoDate: string, time: string): boolean => {
-    return bookedSlots.includes(time);
+  const isDateBooked = (date: string, time: string): boolean => {
+    return allBookings.some(
+      (slot: any) => slot.date === date && slot.time === time
+    );
+  };
+  const isDayFullyBooked = (date: string) => {
+    const bookingsForDay = allBookings.filter((b) => b.date === date);
+
+    return TIME_SLOTS.every((slot) =>
+      bookingsForDay.some((b) => b.time === slot)
+    );
   };
 
   const handleBooking = async (bookingData: {
@@ -107,7 +135,14 @@ export const useBookings = (userEmail?: string) => {
         setSelectedDate(null);
         setSelectedTime(null);
       }, 3000);
-
+      await sendEmail({
+        to: bookingData.email,
+        subject: "Séance gratuite",
+        html: `<h2>New Contact Message</h2>
+    <p><strong>Name:</strong> ${bookingData.email}</p>,
+    <p><strong>date:</strong> ${selectedDate}</p>,
+    <p><strong>time:</strong> ${selectedTime}</p>`,
+      });
       return true;
     } catch (err) {
       setError("Une erreur est survenue");
@@ -144,7 +179,27 @@ export const useBookings = (userEmail?: string) => {
       setLoading(false);
     }
   };
+  const goToPreviousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+      setSelectedDate(null)
+    } else {
+      setCurrentMonth(currentMonth - 1)
+      setSelectedDate(null);
+    }
+  };
 
+  const goToNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+      setSelectedDate(null);
+    } else {
+      setCurrentMonth(currentMonth + 1)
+      setSelectedDate(null);
+    }
+  };
   return {
     bookings,
     selectedDate,
@@ -152,6 +207,10 @@ export const useBookings = (userEmail?: string) => {
     showConfirmation,
     loading,
     error,
+    currentMonth,
+    currentYear,
+    goToPreviousMonth,
+    goToNextMonth,
     setSelectedDate,
     setSelectedTime,
     setError,
@@ -159,5 +218,6 @@ export const useBookings = (userEmail?: string) => {
     handleBooking,
     cancelBooking,
     fetchBookings,
+    isDayFullyBooked,
   };
 };

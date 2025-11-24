@@ -1,38 +1,42 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Calendar from "@/components/booking/calendar";
 import TimeSlots from "@/components/booking/time-slots";
 import BookingInfo from "@/components/booking/booking-info";
 import BookingsList from "@/components/booking/bookings-list";
 import BookingModal from "@/components/booking/booking-modal";
 import { useBookings } from "@/hooks/use-bookings";
-import { getCalendarData } from "@/lib/utils";
 import { CheckCircle, AlertCircle } from "lucide-react";
+import { isPastDate } from "@/lib/utils";
 
-const TIME_SLOTS = ["09:00", "10:30", "12:00", "14:00", "15:30", "17:00"];
+export const TIME_SLOTS = ["09:00", "10:30", "12:00", "14:00", "15:30", "17:00"];
 
 export default function BookingPage() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
-
+  const [past, setPast] = useState(false);
   const {
     bookings,
     selectedDate,
+    currentYear,
+    currentMonth,
+    goToPreviousMonth,
+    goToNextMonth,
     selectedTime,
     showConfirmation,
     loading,
     error,
     setSelectedDate,
     setSelectedTime,
+    isDayFullyBooked,
     setError,
     isDateBooked,
     handleBooking,
     cancelBooking,
   } = useBookings(userEmail);
 
-  const calendarData = useMemo(() => getCalendarData(), []);
-
+    
   const handleReserverClick = () => {
     if (!selectedDate || !selectedTime) {
       setError("Veuillez sélectionner une date et une heure");
@@ -74,8 +78,12 @@ export default function BookingPage() {
         <div className="md:col-span-2">
           <div className="bg-white rounded-lg shadow p-6">
             <Calendar
-              calendarData={calendarData}
+              isDayFullyBooked={isDayFullyBooked}
               selectedDate={selectedDate}
+              goToNextMonth={goToNextMonth}
+              currentMonth={currentMonth}
+              currentYear={currentYear}
+              goToPreviousMonth={goToPreviousMonth}
               onSelectDate={(date) => {
                 setSelectedDate(date);
                 setSelectedTime(null);
@@ -115,13 +123,13 @@ export default function BookingPage() {
             </div>
           </div>
 
-          {userEmail && bookings.length > 0 && (
+          {/* {userEmail && bookings.length > 0 && (
             <BookingsList
               bookings={bookings}
               onCancel={cancelBooking}
               loading={loading}
             />
-          )}
+          )} */}
         </div>
 
         <BookingInfo />

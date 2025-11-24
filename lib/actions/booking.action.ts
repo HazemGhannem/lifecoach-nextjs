@@ -134,6 +134,37 @@ export async function getBookingsByEmail(email: string) {
     };
   }
 }
+// Get bookings  
+export async function getBookingsByMonth(year: number, month: number) {
+  try {
+    await connectDB();
+    // Pad month to 2 digits
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const monthStr = pad(month); // JS months are 0-based
+
+    // Construct start and end strings for string comparison
+    const startDateStr = `${year}-${monthStr}-01`;
+    const endDateStr = `${year}-${monthStr}-31`; // 31 works because strings sort lexically
+
+    const bookings = await Booking.find({
+      date: { $gte: startDateStr, $lte: endDateStr },
+    })
+      .sort({ date: 1, time: 1 })
+      .lean();
+
+    return {
+      success: true,
+      bookings: JSON.parse(JSON.stringify(bookings)),
+    };
+  } catch (error) {
+    console.error("Error fetching bookings by month:", error);
+    return {
+      success: false,
+      error: "Échec de la récupération des réservations",
+    };
+  }
+}
+
 
 // Cancel booking
 export async function cancelBooking(bookingId: string) {
@@ -178,7 +209,6 @@ export async function getBookedSlots(date: string) {
       date,
       status: { $in: ["PENDING", "CONFIRMED"] },
     }).select("time");
-
     return bookings.map((booking) => booking.time);
   } catch (error) {
     console.error("Error fetching booked slots:", error);
