@@ -183,8 +183,10 @@ export const useBookings = (userEmail?: string) => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
       setCurrentYear(currentYear - 1);
+      setSelectedDate(null)
     } else {
-      setCurrentMonth(currentMonth - 1);
+      setCurrentMonth(currentMonth - 1)
+      setSelectedDate(null);
     }
   };
 
@@ -192,8 +194,10 @@ export const useBookings = (userEmail?: string) => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
       setCurrentYear(currentYear + 1);
+      setSelectedDate(null);
     } else {
-      setCurrentMonth(currentMonth + 1);
+      setCurrentMonth(currentMonth + 1)
+      setSelectedDate(null);
     }
   };
   return {

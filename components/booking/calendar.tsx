@@ -1,16 +1,19 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { CalendarData } from "@/types";
-import { formatISO, buildCalendarWeeks, getCalendarData, isPastDate } from "@/lib/utils";
+import {
+  buildCalendarWeeks,
+  getCalendarData,
+  isPastDate,
+} from "@/lib/utils";
 
 interface CalendarProps {
   selectedDate: string | null;
   currentYear: number;
-  currentMonth: number ;
+  currentMonth: number;
   onSelectDate: (date: string) => void;
   goToNextMonth: () => void;
   goToPreviousMonth: () => void;
@@ -46,10 +49,9 @@ export default function Calendar({
     () => getCalendarData(currentYear, currentMonth),
     []
   );
-  const { year, month} = calendarData;
-const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
+  const { year, month } = calendarData;
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const weeks = buildCalendarWeeks(firstDay, daysInMonth);
 
   return (
@@ -98,14 +100,13 @@ const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
           const iso = `${year}-${pad(month + 1)}-${pad(day)}`; // YYYY-MM-DD
 
           const disabledDay =
-            isPastDate(currentYear, currentMonth, day) ||
-            isDayFullyBooked(iso); // Disable past or fully booked
+            isPastDate(currentYear, currentMonth, day) || isDayFullyBooked(iso); // Disable past or fully booked
 
           return (
             <button
               key={iso}
               onClick={() => onSelectDate(iso)}
-              disabled={disabledDay}
+              disabled={disabledDay }
               className={`py-3 rounded-md transition ${
                 selectedDate === iso
                   ? "bg-purple-600 text-white border-transparent"
