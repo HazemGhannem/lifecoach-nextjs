@@ -209,7 +209,6 @@ export async function getBookedSlots(date: string) {
       date,
       status: { $in: ["PENDING", "CONFIRMED"] },
     }).select("time");
-
     return bookings.map((booking) => booking.time);
   } catch (error) {
     console.error("Error fetching booked slots:", error);

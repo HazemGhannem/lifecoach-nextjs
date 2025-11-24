@@ -35,9 +35,8 @@ export const useBookings = (userEmail?: string) => {
   const [error, setError] = useState<string | null>(null);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
-
   useEffect(() => {
-    fetchAllBookings(currentYear, currentMonth+1); // only call if selectedDate is not null
+    fetchAllBookings(currentYear, currentMonth + 1); // only call if selectedDate is not null
   }, [currentMonth, currentYear]);
   const fetchAllBookings = async (year: number, month: number) => {
     try {
@@ -85,8 +84,10 @@ export const useBookings = (userEmail?: string) => {
     }
   };
 
-  const isDateBooked = (isoDate: string, time: string): boolean => {
-    return bookedSlots.includes(time);
+  const isDateBooked = (date: string, time: string): boolean => {
+    return allBookings.some(
+      (slot: any) => slot.date === date && slot.time === time
+    );
   };
   const isDayFullyBooked = (date: string) => {
     const bookingsForDay = allBookings.filter((b) => b.date === date);
