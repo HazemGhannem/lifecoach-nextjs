@@ -28,7 +28,9 @@ export default function PricingSection() {
         setIsLoading(true);
         setError(null);
         const res = await getAllPackages();
-        setPackages(res);
+        setPackages(
+          packages.map((pkg) => ({ ...pkg, _id: pkg._id.toString() }))
+        );
       } catch (error) {
         console.error("Failed to fetch packages:", error);
         setError("Impossible de charger les forfaits. Veuillez réessayer.");
