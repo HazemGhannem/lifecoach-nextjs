@@ -1,11 +1,11 @@
+import connectDB from "@/lib/mongodb";
+import User from "@/database/user.model";
 import bcrypt from "bcryptjs";
-import connectDB from "../mongodb";
-import User, { IUser } from "@/database/user.model";
 
 export interface LoginResult {
   success: boolean;
-  user?: Omit<IUser, "password">; // omit password when returning user
   message?: string;
+  user?: Omit<typeof User, "password">;
 }
 
 export async function loginUser(
@@ -13,10 +13,11 @@ export async function loginUser(
   password: string
 ): Promise<LoginResult> {
   try {
+    // Connect to the database
     await connectDB();
 
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).lean(); // lean() gives plain JS object
     if (!user) {
       return { success: false, message: "Utilisateur non trouvé" };
     }
@@ -27,10 +28,8 @@ export async function loginUser(
       return { success: false, message: "Mot de passe incorrect" };
     }
 
-    // Return user data without password
-    const { password: _, ...userWithoutPassword } = JSON.parse(
-      JSON.stringify(user)
-    );
+    // Remove password before returning
+    const { password: _, ...userWithoutPassword } = user;
 
     return { success: true, user: userWithoutPassword };
   } catch (error) {

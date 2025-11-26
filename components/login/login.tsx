@@ -1,5 +1,4 @@
-"use client";
-
+'use client'
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
 
@@ -9,11 +8,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e:any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Add your login logic here
-    setTimeout(() => setIsLoading(false), 1500);
+    setIsLoading(true); // start loading
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        console.log("1", data);
+      } else {
+        console.log("2", data);
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false); // stop loading
+    }
   };
 
   return (
