@@ -89,7 +89,7 @@ export default function TimeSlotsAdmin() {
     <div className="pt-6 max-w-5xl  mx-auto px-2">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
+        <h1 className="text-3xl font-bold ">
           Gestion des Créneaux Horaires
         </h1>
         <button
@@ -246,7 +246,7 @@ export default function TimeSlotsAdmin() {
                                 isAvailable: slot.isAvailable,
                               })
                             }
-                            className="px-3 py-1 bg-green-600 text-white text-sm rounded"
+                            className="px-3 py-1 bg-green-600  text-sm rounded"
                           >
                             Enregistrer
                           </button>

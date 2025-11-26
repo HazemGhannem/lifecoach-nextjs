@@ -1,7 +1,7 @@
 // app/admin/page.tsx or components/AdminDashboard.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Package, Calendar, Clock, CheckCircle } from "lucide-react";
 import { PackageType, BookingType, BookingStatus } from "@/types";
 import PackageModal from "@/components/admin/package-modal";
@@ -10,15 +10,10 @@ import PackagesTable from "@/components/admin/package-tab";
 import AdminTabs from "@/components/admin/admin-tab";
 import StatsCard from "@/components/admin/stats-cards";
 import TimeSlotsAdmin from "@/components/admin/timeslot-tab";
-import {
-  createPackage,
-  deletePackage,
-  getAllPackages,
-  PackageInput,
-  updatePackage,
-} from "@/lib/actions/package.action";
+import { PackageInput } from "@/lib/actions/package.action";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/Toast";
+import { usePackages } from "@/hooks/use-package";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<
@@ -29,28 +24,19 @@ export default function AdminDashboard() {
   const [selectedItem, setSelectedItem] = useState<PackageType | null>(null);
 
   // Sample data - replace with your API calls
-  const [packages, setPackages] = useState<PackageType[]>([]);
-  const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
 
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const data: any = await getAllPackages();
-        setPackages(data);
-      } catch (error) {
-        console.error("Failed to fetch packages:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPackages();
-  }, []);
+  const {
+    refreshPackages,
+    packages,
+    createPackage,
+    updatePackage,
+    deletePackage,
+  } = usePackages();
 
   const [bookings, setBookings] = useState<BookingType[]>([
     {
@@ -94,9 +80,9 @@ export default function AdminDashboard() {
     if (!deleteId) return;
 
     try {
-      const success = await deletePackage(deleteId);
+      const success:any = await deletePackage(deleteId);
       if (success) {
-        setPackages(packages.filter((p) => p._id !== deleteId));
+        await refreshPackages();
         setToast({
           message: "Forfait supprimé avec succès !",
           type: "success",
@@ -120,27 +106,11 @@ export default function AdminDashboard() {
 
   const handleSavePackage = async () => {
     if (modalMode === "create") {
-      const newPkg = await createPackage(formData as PackageInput);
-      console.log(formData as PackageInput, "++++++");
-      if (newPkg)
-        setPackages([
-          ...packages,
-          {
-            ...newPkg,
-            _id: newPkg._id.toString(),
-          },
-        ]);
+      await createPackage(formData as PackageInput);
     } else if (selectedItem) {
-      const updatedPkg = await updatePackage(
-        selectedItem._id,
-        formData as Partial<PackageInput>
-      );
-      if (updatedPkg) {
-        setPackages(
-          packages.map((p) => (p._id === updatedPkg._id ? updatedPkg : p))
-        );
-      }
+      await updatePackage(selectedItem._id, formData as Partial<PackageInput>);
     }
+    await refreshPackages();
     setShowModal(false);
   };
 
