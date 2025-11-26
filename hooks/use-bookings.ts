@@ -183,10 +183,19 @@ export const useBookings = (userEmail?: string) => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
       setCurrentYear(currentYear - 1);
-      setSelectedDate(null)
+      if (selectedDate) {
+        const [year, month, day] = selectedDate.split("-");
+        const newDate = `${currentYear - 1}-12-${day}`;
+        setSelectedDate(newDate);
+      }
     } else {
-      setCurrentMonth(currentMonth - 1)
-      setSelectedDate(null);
+      setCurrentMonth(currentMonth - 1);
+      if (selectedDate) {
+        const [year, month, day] = selectedDate.split("-");
+        const newMonth = String(currentMonth).padStart(2, "0");
+        const newDate = `${year}-${newMonth}-${day}`;
+        setSelectedDate(newDate);
+      }
     }
   };
 
@@ -194,10 +203,21 @@ export const useBookings = (userEmail?: string) => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
       setCurrentYear(currentYear + 1);
-      setSelectedDate(null);
+      if (selectedDate) {
+        const [year, month, day] = selectedDate.split("-");
+        const newDate = `${currentYear + 1}-01-${day}`;
+        console.log(newDate);
+        setSelectedDate(newDate);
+      }
     } else {
-      setCurrentMonth(currentMonth + 1)
-      setSelectedDate(null);
+      setCurrentMonth(currentMonth + 1);
+      if (selectedDate) {
+        const [year, month, day] = selectedDate.split("-");
+        const newMonth = String(currentMonth + 2).padStart(2, "0");
+        const newDate = `${year}-${newMonth}-${day}`;
+        console.log(newMonth);
+        setSelectedDate(newDate);
+      }
     }
   };
   return {
