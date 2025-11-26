@@ -8,6 +8,8 @@ import {
   updateTimeSlot,
 } from "@/lib/actions/timeslot.action";
 import { Plus, Trash2, Edit2, Calendar, Clock } from "lucide-react";
+import { Toast } from "../Toast";
+import ConfirmModal from "./ConfirmModal";
 
 // Predefined time slots to choose from
 const PRESET_TIME_SLOTS = [
@@ -28,6 +30,11 @@ export default function TimeSlotsAdmin() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   // For bulk adding
   const [selectedDate, setSelectedDate] = useState("");
@@ -59,12 +66,19 @@ export default function TimeSlotsAdmin() {
   // Add all selected time slots for the selected date
   const handleBulkAdd = async () => {
     if (!selectedDate) {
-      alert("Veuillez choisir une date");
+      setToast({
+        message: "Veuillez choisir une date",
+        type: "error",
+      });
       return;
     }
 
     if (selectedTimeSlots.length === 0) {
-      alert("Veuillez sélectionner au moins un créneau horaire");
+      setToast({
+        message: "Veuillez sélectionner au moins un créneau horaire",
+        type: "error",
+      });
+
       return;
     }
 
@@ -95,11 +109,13 @@ export default function TimeSlotsAdmin() {
     setAddingBulk(false);
 
     if (successCount > 0) {
-      alert(
-        `${successCount} créneau(x) ajouté(s) avec succès!${
+      setToast({
+        message: `${successCount} créneau(x) ajouté(s) avec succès!${
           errorCount > 0 ? ` (${errorCount} erreur(s))` : ""
-        }`
-      );
+        }`,
+        type: "success",
+      });
+
       setSelectedDate("");
       setSelectedTimeSlots([]);
       fetchTimeSlots();
@@ -115,7 +131,11 @@ export default function TimeSlotsAdmin() {
 
   const handleSingleAdd = async () => {
     if (!singleSlotForm.date) {
-      alert("Veuillez choisir une date");
+      setToast({
+        message: "Veuillez choisir une date",
+        type: "error",
+      });
+
       return;
     }
 
@@ -126,19 +146,49 @@ export default function TimeSlotsAdmin() {
     });
 
     if (result.success) {
-      alert("Créneau ajouté avec succès!");
+      setToast({
+        message: "Créneau ajouté avec succès!",
+        type: "success",
+      });
+
       setSingleSlotForm({ date: "", startTime: "09:00", endTime: "09:40" });
       setShowAddForm(false);
       fetchTimeSlots();
     } else {
-      alert(result.error);
+      setToast({
+        message: "" + result.error,
+        type: "error",
+      });
     }
   };
+  const handleDeleteTimeSlot = (id: string) => {
+    setDeleteId(id); // opens the confirmation modal
+  };
+  const handleDelete = async () => {
+    if (!deleteId) return;
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Voulez-vous vraiment supprimer ce créneau ?")) {
-      const result = await deleteTimeSlot(id);
-      if (result.success) fetchTimeSlots();
+    try {
+      const success: any = await deleteTimeSlot(deleteId);
+      if (success) {
+        await fetchTimeSlots();
+        setToast({
+          message: "caneaux supprimé avec succès !",
+          type: "success",
+        });
+      } else {
+        setToast({
+          message: "Échec de la suppression du caneaux.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Delete package error:", error);
+      setToast({
+        message: "Erreur lors de la suppression du caneau.",
+        type: "error",
+      });
+    } finally {
+      setDeleteId(null); // close the confirmation modal
     }
   };
 
@@ -161,9 +211,7 @@ export default function TimeSlotsAdmin() {
     <div className="pt-6 max-w-6xl mx-auto px-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Gestion des Créneaux Horaires
-        </h1>
+        <h1 className="text-3xl font-bold ">Gestion des Créneaux Horaires</h1>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
           className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
@@ -450,7 +498,7 @@ export default function TimeSlotsAdmin() {
                               <Edit2 className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(slot._id)}
+                              onClick={() => handleDeleteTimeSlot(slot._id)}
                               className="p-1.5 text-red-600 hover:bg-red-50 rounded"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -464,6 +512,19 @@ export default function TimeSlotsAdmin() {
             </div>
           ))}
       </div>
+      <ConfirmModal
+        isOpen={!!deleteId}
+        message="Voulez-vous vraiment supprimer ce créneau ?"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
+      />
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

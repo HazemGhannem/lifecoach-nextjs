@@ -1,8 +1,7 @@
 "use client";
 import Link from "next/link";
 import { CheckCircle, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getAllPackages } from "@/lib/actions/package.action";
+import { usePackages } from "@/hooks/use-package";
 
 export interface Package {
   _id: string;
@@ -18,31 +17,7 @@ export interface Package {
 }
 
 export default function PricingSection() {
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchPackages() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const res = await getAllPackages();
-        const formattedPackages = res.map((pkg) => ({
-          ...pkg,
-          _id: pkg._id.toString(),
-        }));
-        setPackages(formattedPackages);
-      } catch (error) {
-        console.error("Failed to fetch packages:", error);
-        setError("Impossible de charger les forfaits. Veuillez réessayer.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchPackages();
-  }, []);
+   const { isLoading,error, packages } = usePackages();
   return (
     <div className="  py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -168,7 +143,7 @@ export default function PricingSection() {
                       </p>
                     )}
                     <ul className="space-y-2 mb-6 flex-grow">
-                      {pkg.features.map((feature, idx) => (
+                      {pkg.features.map((feature:any, idx:any) => (
                         <li key={idx} className="flex items-start text-sm">
                           <CheckCircle
                             className={`h-4 w-4 mr-2 mt-0.5 flex-shrink-0 ${
@@ -244,7 +219,7 @@ export default function PricingSection() {
                       )}
                     </div>
                     <ul className="space-y-3 mb-8 flex-grow">
-                      {pkg.features.map((feature, idx) => (
+                      {pkg.features.map((feature:any, idx:any) => (
                         <li key={idx} className="flex items-start">
                           <CheckCircle className="h-5 w-5 text-white mr-2 mt-1 flex-shrink-0" />
                           <span className="text-white">{feature}</span>
