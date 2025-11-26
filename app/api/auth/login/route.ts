@@ -10,12 +10,27 @@ export interface LoginResult {
 
 // The actual API route function
 export async function POST(req: NextRequest) {
-  try {
-    const { email, password } = await req.json();
-    const result = await loginUser(email, password);
-    return NextResponse.json(result);
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ success: false, message: "Erreur du serveur" }, { status: 500 });
+  const { email, password } = await req.json();
+
+  const result = await loginUser(email, password);
+
+  if (!result.success) {
+    return NextResponse.json(
+      { success: false, message: result.message },
+      { status: 401 }
+    );
   }
+
+  const res = NextResponse.json({ success: true, user: result.user });
+
+  // Set HTTP-only cookie
+  res.cookies.set("token", result.token!, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 3600, // 1 hour
+    path: "/admin",
+  });
+
+  return res;
 }
