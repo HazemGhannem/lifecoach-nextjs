@@ -5,34 +5,33 @@ import jwt from "jsonwebtoken";
 export default function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
-  // List of protected routes
-  const protectedRoutes = ["/admin"];
-
   const { pathname } = request.nextUrl;
 
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isLoginRoute = pathname.startsWith("/login");
 
-  if (!isProtected) {
-    return NextResponse.next();
+  // Block /admin without token
+  if (isAdminRoute) {
+    if (!token) return NextResponse.redirect(new URL("/login", request.url));
+
+    try {
+      jwt.verify(token, process.env.JWT_SECRET!);
+    } catch {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
-  // No token → redirect to login
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Block /login if already logged in
+  if (isLoginRoute && token) {
+    try {
+      jwt.verify(token, process.env.JWT_SECRET!);
+      return NextResponse.redirect(new URL("/admin", request.url));
+    } catch (e) {}
   }
 
-  // Verify token
-  try {
-    jwt.verify(token, process.env.JWT_SECRET!);
-    return NextResponse.next();
-  } catch (err) {
-    // Invalid or expired token
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/:path*"],
 };

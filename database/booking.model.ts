@@ -8,7 +8,7 @@ export interface IBooking extends Document {
   time: string; // Format: HH:MM
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
   message?: string;
-  package?: string;
+  package?: Schema.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,9 +51,9 @@ const BookingSchema = new Schema<IBooking>(
       trim: true,
     },
     package: {
-      type: String,
-      enum: ["single", "pack3", "pack5", "pack10", "unlimited", "premium"],
-      trim: true,
+      type: Schema.Types.ObjectId,
+      ref: "Package",
+      required: true,
     },
   },
   {

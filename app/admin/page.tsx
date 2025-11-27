@@ -16,6 +16,7 @@ import { Toast } from "@/components/Toast";
 import { usePackages } from "@/hooks/use-package";
 import { useBookings } from "@/hooks/use-bookings";
 import { bookingStatusEmailTemplate } from "@/lib/bookingStatusTemplate";
+import { updateBookingStatus } from "@/lib/actions/booking.action";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<
@@ -102,25 +103,35 @@ export default function AdminDashboard() {
     setShowModal(false);
   };
 
-  const updateBookingStatus = async (id: string, status: BookingStatus) => {
+  const handleUpdateBookingStatus = async (
+    id: string,
+    status: BookingStatus
+  ) => {
     try {
       await updateBookingStatus(id, status);
-      setBookings(
-        bookings.map((b) =>
-          b._id === id ? { ...b, status, updatedAt: new Date() } : b
-        )
-      );
+      // setBookings(
+      //   allBookings.map((b) =>
+      //     b._id === id ? { ...b, status, updatedAt: new Date() } : b
+      //   )
+      // );
 
-      const booking = bookings.find((b) => b._id === id);
-
+      const booking = allBookings.find((b) => b._id === id);
+      console.log(bookings);
       if (booking) {
-        await bookingStatusEmailTemplate(
+        const result = await bookingStatusEmailTemplate(
           booking.email,
           booking.name,
           status,
           booking.date,
           booking.time
         );
+        console.log(result);
+        if (result?.success) {
+          setToast({
+            message: "changement de status.",
+            type: "success",
+          });
+        }
       }
     } catch (error) {
       setToast({
@@ -205,7 +216,7 @@ export default function AdminDashboard() {
         {activeTab === "bookings" && (
           <BookingsTable
             bookings={allBookings}
-            onStatusChange={updateBookingStatus}
+            onStatusChange={handleUpdateBookingStatus}
           />
         )}
         {/* TimeSlot Tab */}

@@ -38,7 +38,7 @@ export interface BookingType {
   time: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
   message?: string;
-  package?: string;
+  package?: PackageType;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -11,6 +11,7 @@ import {
 import { TIME_SLOTS } from "@/app/booking/page";
 import { sendEmail } from "@/lib/email";
 import { BookingType } from "@/types";
+import { Mongoose } from "mongoose";
 
 export interface Booking {
   _id: string;
@@ -21,7 +22,12 @@ export interface Booking {
   time: string;
   status?: string;
   notes?: string;
-  package?: string;
+  package: {
+    _id: string;
+    name: string;
+    price: number;
+    features?: string[];
+  };
 }
 
 export const useBookings = (userEmail?: string) => {
@@ -35,6 +41,7 @@ export const useBookings = (userEmail?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<string>("");
   const [allBookings, setAllBookings] = useState<BookingType[]>([]);
   const [stats, setStats] = useState({
     total: 0,
@@ -123,12 +130,13 @@ export const useBookings = (userEmail?: string) => {
     try {
       const result = await createBooking({
         ...bookingData,
-        package: "single",
+        packageId: selectedPackage,
         date: selectedDate,
         time: selectedTime,
       });
 
       if (!result.success) {
+        console.log(result);
         setError(result.error || "Erreur");
         return false;
       }
@@ -235,6 +243,7 @@ export const useBookings = (userEmail?: string) => {
     bookings,
     selectedDate,
     selectedTime,
+    selectedPackage,
     showConfirmation,
     loading,
     error,
@@ -244,6 +253,7 @@ export const useBookings = (userEmail?: string) => {
     goToNextMonth,
     setSelectedDate,
     setSelectedTime,
+    setSelectedPackage,
     setError,
     isDateBooked,
     handleBooking,

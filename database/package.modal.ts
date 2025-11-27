@@ -20,6 +20,7 @@ const PackageSchema = new Schema<IPackage>(
       type: String,
       required: [true, "Le nom du package est requis"],
       trim: true,
+      unique: true,
     },
     price: {
       type: Number,

@@ -1,7 +1,9 @@
 "use server";
 
 import Booking from "@/database/booking.model";
+import Package from "@/database/package.modal";
 import connectDB from "@/lib/mongodb";
+import mongoose from "mongoose";
 
 interface CreateBookingParams {
   name: string;
@@ -10,7 +12,7 @@ interface CreateBookingParams {
   date: string;
   time: string;
   notes?: string;
-  package?: string;
+  packageId?: string;
 }
 
 // Create booking
@@ -18,17 +20,9 @@ export async function createBooking(data: CreateBookingParams) {
   try {
     await connectDB();
 
-    const {
-      name,
-      email,
-      phone,
-      date,
-      time,
-      notes,
-      package: packageType,
-    } = data;
+    const { name, email, phone, date, time, notes, packageId } = data;
 
-    if (!name || !email || !date || !time) {
+    if (!name || !email || !date || !time || !packageId) {
       return {
         success: false,
         error: "Le nom, l'email, la date et l'heure sont requis",
@@ -48,12 +42,12 @@ export async function createBooking(data: CreateBookingParams) {
         error: "Ce créneau est déjà réservé",
       };
     }
-
+    const freePackage = await Package.findOne({ name: "free" });
     // Check if this email already has a "single" booking
-    if (data.package === "single") {
+    if (data.packageId == freePackage._id.toString()) {
       const existing = await Booking.findOne({
         email: data.email,
-        package: "single",
+        package: freePackage._id,
       });
       if (existing) {
         return {
@@ -71,7 +65,7 @@ export async function createBooking(data: CreateBookingParams) {
       date,
       time,
       notes: notes || undefined,
-      package: packageType || undefined,
+      package: new mongoose.Types.ObjectId(packageId),
       status: "PENDING",
     });
 
@@ -119,6 +113,7 @@ export async function getBookingsByEmail(email: string) {
       email,
       status: { $in: ["PENDING", "CONFIRMED"] },
     })
+      .populate("package")
       .sort({ date: 1, time: 1 })
       .lean();
 
@@ -149,6 +144,7 @@ export async function getBookingsByMonth(year: number, month: number) {
     const bookings = await Booking.find({
       date: { $gte: startDateStr, $lte: endDateStr },
     })
+      .populate("package")
       .sort({ date: 1, time: 1 })
       .lean();
 
@@ -178,7 +174,7 @@ export async function cancelBooking(bookingId: string) {
       bookingId,
       { status: "CANCELLED" },
       { new: true }
-    );
+    ).populate("package");
 
     if (!booking) {
       return { success: false, error: "Réservation non trouvée" };
@@ -239,6 +235,7 @@ export async function getAllBookingsAdmin(filters?: {
     }
 
     const bookings = await Booking.find(query)
+      .populate("package")
       .sort({ date: -1, time: -1 })
       .lean();
 

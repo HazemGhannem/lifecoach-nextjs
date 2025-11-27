@@ -21,6 +21,7 @@ export const TIME_SLOTS = [
 export default function BookingPage() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
+
   const {
     selectedDate,
     currentYear,
@@ -28,11 +29,13 @@ export default function BookingPage() {
     goToPreviousMonth,
     goToNextMonth,
     selectedTime,
+    selectedPackage,
     showConfirmation,
     loading,
     error,
     setSelectedDate,
     setSelectedTime,
+    setSelectedPackage,
     isDayFullyBooked,
     setError,
     isDateBooked,
@@ -171,6 +174,8 @@ export default function BookingPage() {
         onSubmit={handleModalSubmit}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
+        selectedPackage={selectedPackage}
+        onPackageSelect={(id) => setSelectedPackage(id)}
         loading={loading}
         error={error}
       />

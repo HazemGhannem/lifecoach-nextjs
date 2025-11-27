@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { X, Calendar, Clock, User, Mail, Phone } from "lucide-react";
+import { getAllPackages } from "@/lib/actions/package.action";
+import { usePackages } from "@/hooks/use-package";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -13,6 +15,8 @@ interface BookingModalProps {
   }) => Promise<boolean>;
   selectedDate: string | null;
   selectedTime: string | null;
+  selectedPackage: string;
+  onPackageSelect: (packageId: string) => void;
   loading?: boolean;
   error?: string | null;
 }
@@ -22,6 +26,8 @@ export default function BookingModal({
   onClose,
   selectedDate,
   selectedTime,
+  selectedPackage,
+  onPackageSelect,
   loading = false,
   error = null,
   onSubmit,
@@ -31,6 +37,7 @@ export default function BookingModal({
     email: "",
     phone: "",
   });
+  const { isLoading, error: errorPackage, packages } = usePackages();
 
   if (!isOpen) return null;
 
@@ -54,6 +61,8 @@ export default function BookingModal({
       error = null;
     }
   };
+
+  const selectedPackageData = packages.find((p) => p._id === selectedPackage);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -109,6 +118,55 @@ export default function BookingModal({
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Package Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Forfait <span className="text-red-500">*</span>
+              </label>
+              {isLoading ? (
+                <div className="text-sm text-gray-500">
+                  Chargement des forfaits...
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {packages.map((pkg) => (
+                    <label
+                      key={pkg._id}
+                      className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition ${
+                        selectedPackage === pkg._id
+                          ? "border-purple-600 bg-purple-50"
+                          : "border-gray-300 hover:border-purple-400"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="package"
+                        value={pkg._id}
+                        checked={selectedPackage === pkg._id}
+                        onChange={(e) => onPackageSelect(e.target.value)}
+                        className="mr-3"
+                        disabled={loading}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-gray-900">
+                            {pkg.name}
+                          </span>
+                          <span className="font-bold text-purple-600">
+                            {pkg.price}€
+                          </span>
+                        </div>
+                        {pkg.features && pkg.features.length > 0 && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {pkg.features[0]}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -67,7 +67,7 @@ export default function BookingsTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {booking.package || "-"}
+                  {booking.package?.name || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <StatusBadge status={booking.status} />
