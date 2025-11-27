@@ -129,41 +129,43 @@ export default function BookingModal({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {packages.map((pkg) => (
-                    <label
-                      key={pkg._id}
-                      className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition ${
-                        selectedPackage === pkg._id
-                          ? "border-purple-600 bg-purple-50"
-                          : "border-gray-300 hover:border-purple-400"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="package"
-                        value={pkg._id}
-                        checked={selectedPackage === pkg._id}
-                        onChange={(e) => onPackageSelect(e.target.value)}
-                        className="mr-3"
-                        disabled={loading}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-gray-900">
-                            {pkg.name}
-                          </span>
-                          <span className="font-bold text-purple-600">
-                            {pkg.price}€
-                          </span>
+                  {packages
+                    .filter((pkg) => pkg.name.toLowerCase() === "free")
+                    .map((pkg) => (
+                      <label
+                        key={pkg._id}
+                        className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition ${
+                          selectedPackage === pkg._id
+                            ? "border-purple-600 bg-purple-50"
+                            : "border-gray-300 hover:border-purple-400"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="package"
+                          value={pkg._id}
+                          checked={selectedPackage === pkg._id}
+                          onChange={(e) => onPackageSelect(e.target.value)}
+                          className="mr-3"
+                          disabled={loading}
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-gray-900">
+                              {pkg.name}
+                            </span>
+                            <span className="font-bold text-purple-600">
+                              {pkg.price}€
+                            </span>
+                          </div>
+                          {pkg.features && pkg.features.length > 0 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {pkg.features[0]}
+                            </p>
+                          )}
                         </div>
-                        {pkg.features && pkg.features.length > 0 && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {pkg.features[0]}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  ))}
+                      </label>
+                    ))}
                 </div>
               )}
             </div>

@@ -7,17 +7,18 @@ export default function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isLoginRoute = pathname.startsWith("/login");
+  const isAdminRoute = pathname.startsWith("/admin/dashboard");
+  const isLoginRoute = pathname.startsWith("/admin/login");
 
   // Block /admin without token
   if (isAdminRoute) {
-    if (!token) return NextResponse.redirect(new URL("/login", request.url));
+    if (!token)
+      return NextResponse.redirect(new URL("/admin/login", request.url));
 
     try {
       jwt.verify(token, process.env.JWT_SECRET!);
     } catch {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
 
@@ -25,7 +26,7 @@ export default function proxy(request: NextRequest) {
   if (isLoginRoute && token) {
     try {
       jwt.verify(token, process.env.JWT_SECRET!);
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     } catch (e) {}
   }
 
