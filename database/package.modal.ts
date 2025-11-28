@@ -20,6 +20,7 @@ const PackageSchema = new Schema<IPackage>(
       type: String,
       required: [true, "Le nom du package est requis"],
       trim: true,
+      unique: true,
     },
     price: {
       type: Number,
@@ -34,6 +35,11 @@ const PackageSchema = new Schema<IPackage>(
     duration: {
       type: String,
       required: [true, "La durée est requise"],
+      trim: true,
+    },
+    badge: {
+      type: String,
+      required: [false, "La badge est requise"],
       trim: true,
     },
     features: {

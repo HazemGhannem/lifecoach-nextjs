@@ -4,11 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import {
-  buildCalendarWeeks,
-  getCalendarData,
-  isPastDate,
-} from "@/lib/utils";
+import { buildCalendarWeeks, getCalendarData, isPastDate } from "@/lib/utils";
 
 interface CalendarProps {
   selectedDate: string | null;
@@ -47,7 +43,7 @@ export default function Calendar({
 }: CalendarProps) {
   const calendarData = useMemo(
     () => getCalendarData(currentYear, currentMonth),
-    []
+    [currentYear, currentMonth]
   );
   const { year, month } = calendarData;
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
