@@ -23,7 +23,7 @@ export default function LoginPage() {
       const data = await res.json();
       console.log(data);
       if (data.success) {
-        router.push("/admin");
+        router.push("/admin/dashboard");
       } else {
         console.log(data);
         alert(data.message);

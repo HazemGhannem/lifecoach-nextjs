@@ -2,8 +2,9 @@
 
 import { useState, FormEvent, useEffect } from "react";
 import { X, Calendar, Clock, User, Mail, Phone } from "lucide-react";
-import { getAllPackages } from "@/lib/actions/package.action";
 import { usePackages } from "@/hooks/use-package";
+import { TimeSlot } from "@/hooks/use-bookings";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -14,8 +15,8 @@ interface BookingModalProps {
     phone?: string;
   }) => Promise<boolean>;
   selectedDate: string | null;
-  selectedTime: string | null;
-  selectedPackage: string;
+  selectedTimeSlots: TimeSlot[];
+  selectedPackage: string | null;
   onPackageSelect: (packageId: string) => void;
   loading?: boolean;
   error?: string | null;
@@ -25,7 +26,7 @@ export default function BookingModal({
   isOpen,
   onClose,
   selectedDate,
-  selectedTime,
+  selectedTimeSlots,
   selectedPackage,
   onPackageSelect,
   loading = false,
@@ -37,8 +38,10 @@ export default function BookingModal({
     email: "",
     phone: "",
   });
+  const [paypalError, setPaypalError] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { isLoading, error: errorPackage, packages } = usePackages();
-
+  console.log(selectedPackage);
   if (!isOpen) return null;
 
   const handleSubmit = async (e: FormEvent) => {
@@ -64,17 +67,66 @@ export default function BookingModal({
 
   const selectedPackageData = packages.find((p) => p._id === selectedPackage);
 
+  const createOrder = async () => {
+    const res = await fetch("/api/payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "create",
+        name: formData.name,
+        email: formData.email,
+        amount: amount.toFixed(2),
+      }),
+    });
+
+    const data = await res.json();
+    if (!data.orderID) throw new Error("No orderID returned from server");
+    return data.orderID;
+  };
+
+  const onApprove = async (orderID: string) => {
+    setIsProcessing(true);
+    try {
+      const res = await fetch("/api/payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "capture",
+          name: formData.name,
+          email: formData.email,
+          amount: amount.toFixed(2),
+          orderID,
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "Capture failed");
+    } catch (err) {
+      console.error(err);
+      setPaypalError("Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onError = (err: any) => {
+    console.error("PayPal error:", err);
+    setPaypalError("An error occurred with PayPal. Please try again.");
+  };
+  // Static amount for now
+  const amount = 300;
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0  bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-opacity-50 transition-opacity"
         onClick={handleBackdropClick}
       />
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+        <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all max-h-[90vh] overflow-y-auto">
           {/* Close button */}
           <button
             onClick={onClose}
@@ -94,22 +146,46 @@ export default function BookingModal({
             </p>
           </div>
 
-          {/* Selected slot info */}
-          <div className="bg-purple-50 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Calendar className="h-5 w-5 text-purple-600" />
-              <span className="font-medium text-gray-900">
-                {formatDate(selectedDate)}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-purple-600" />
-              <span className="font-medium text-gray-900">{selectedTime}</span>
-              <span className="text-sm text-gray-600">(15 minutes)</span>
-            </div>
-          </div>
-          {/* Messages */}
+          {/* Selected slots info */}
+          {selectedTimeSlots && selectedTimeSlots.length > 0 && (
+            <div className="bg-purple-50 rounded-lg p-4 mb-6 space-y-3">
+              <div className="flex items-start gap-3">
+                <Calendar className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600">
+                    Créneaux réservés
+                  </p>
+                  <div className="space-y-1 mt-2">
+                    {selectedTimeSlots &&
+                      selectedTimeSlots.map((slot: any, idx: any) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 text-sm"
+                        >
+                          <Clock className="h-4 w-4 text-purple-500" />
+                          <span className="font-medium text-gray-900">
+                            {formatDate(slot.date)} à {slot.time}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
 
+              {selectedPackageData && (
+                <div className="flex items-center justify-between pt-3 border-t border-purple-200">
+                  <span className="text-sm font-medium text-gray-700">
+                    {selectedPackageData.name}
+                  </span>
+                  <span className="font-bold text-purple-600">
+                    {selectedPackageData.price}€
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Error message */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">
               ❌ {error}
@@ -128,9 +204,14 @@ export default function BookingModal({
                   Chargement des forfaits...
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-48 overflow-y-auto">
                   {packages
-                    .filter((pkg) => pkg.name.toLowerCase() === "free")
+                    .filter((pkg) => {
+                      if (!selectedPackage) {
+                        return pkg.name.toLowerCase() === "free";
+                      }
+                      return pkg._id == selectedPackage;
+                    })
                     .map((pkg) => (
                       <label
                         key={pkg._id}
@@ -160,7 +241,12 @@ export default function BookingModal({
                           </div>
                           {pkg.features && pkg.features.length > 0 && (
                             <p className="text-xs text-gray-500 mt-1">
-                              {pkg.features[0]}
+                              {pkg.features.join(", ")}
+                            </p>
+                          )}
+                          {pkg.sessions && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {pkg.sessions} séance(s)
                             </p>
                           )}
                         </div>
@@ -169,6 +255,7 @@ export default function BookingModal({
                 </div>
               )}
             </div>
+
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -237,22 +324,58 @@ export default function BookingModal({
               </div>
             </div>
 
-            {/* Error message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
             {/* Info */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-xs text-blue-800">
-                ✨ <strong>Première séance de 15 min gratuite !</strong>
+                ✨ <strong>Première séance gratuite !</strong>
                 <br />
                 Vous recevrez un email de confirmation avec tous les détails.
               </p>
             </div>
+            {/* PayPal Buttons */}
+            <div className="mt-4">
+              {paypalError && (
+                <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+                  {paypalError}
+                </div>
+              )}
 
+              <PayPalScriptProvider
+                options={{
+                  clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
+                  currency: "EUR",
+                  intent: "capture",
+                }}
+              >
+                <PayPalButtons
+                  style={{ layout: "vertical" }}
+                  disabled={isProcessing || !formData.name || !formData.email}
+                  // Create order by calling backend
+                  createOrder={async () => {
+                    setPaypalError("");
+                    try {
+                      const orderID = await createOrder(); // your function returns orderID
+                      return orderID;
+                    } catch (err) {
+                      setPaypalError(
+                        "Failed to create order. Please try again."
+                      );
+                      throw err;
+                    }
+                  }}
+                  // Capture order by calling backend
+                  onApprove={async (data) => {
+                    setPaypalError("");
+                    try {
+                      await onApprove(data.orderID); // send orderID to backend
+                    } catch (err) {
+                      setPaypalError("Error capturing PayPal payment");
+                    }
+                  }}
+                  onError={onError}
+                />
+              </PayPalScriptProvider>
+            </div>
             {/* Buttons */}
             <div className="flex gap-3 pt-2">
               <button
@@ -265,7 +388,12 @@ export default function BookingModal({
               </button>
               <button
                 type="submit"
-                disabled={loading || !formData.name || !formData.email}
+                disabled={
+                  loading ||
+                  !formData.name ||
+                  !formData.email ||
+                  !selectedPackage
+                }
                 className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Réservation..." : "Confirmer"}

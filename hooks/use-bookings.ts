@@ -8,62 +8,71 @@ import {
   getBookedSlots,
   getBookingsByMonth,
 } from "@/lib/actions/booking.action";
-import { TIME_SLOTS } from "@/app/booking/page";
 import { sendEmail } from "@/lib/email";
-import { BookingType } from "@/types";
-import { Mongoose } from "mongoose";
+import { useBooking } from "@/context/BookingContext";
+
+export interface TimeSlot {
+  date: string;
+  time: string;
+}
 
 export interface Booking {
   _id: string;
   name: string;
   email: string;
   phone?: string;
-  date: string;
-  time: string;
-  status?: string;
-  notes?: string;
+  date: Array<{
+    _id: string;
+    date: string;
+    times: Array<{
+      _id: string;
+      time: string;
+      status: string;
+    }>;
+  }>;
+  status: string;
+  message?: string;
   package: {
     _id: string;
     name: string;
     price: number;
+    sessions?: number;
     features?: string[];
   };
 }
 
-export const useBookings = (userEmail?: string) => {
+interface BookingFormData {
+  name: string;
+  email: string;
+  phone?: string;
+  message?: string;
+}
+
+export const useBookings = (
+  userEmail?: string,
+  availableTimeSlots?: string[]
+) => {
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [bookings, setBookings] = useState<Booking[]>([]);
+
+  // Multiple time slots selection
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
+  const { selectedPackage, setSelectedPackage, maxSessions, setMaxSessions } =
+    useBooking();
+
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
-  const [selectedPackage, setSelectedPackage] = useState<string>("");
-  const [allBookings, setAllBookings] = useState<BookingType[]>([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    pending: 0,
-    confirmed: 0,
-    completed: 0,
-    cancelled: 0,
-    today: 0,
-  });
+  const [allBookings, setAllBookings] = useState<any[]>([]);
+
   useEffect(() => {
-    fetchAllBookings(currentYear, currentMonth + 1); // only call if selectedDate is not null
+    fetchAllBookings(currentYear, currentMonth + 1);
   }, [currentMonth, currentYear]);
-  const fetchAllBookings = async (year: number, month: number) => {
-    try {
-      const result = await getBookingsByMonth(year, month); // implement this API call
-      if (result.success && result.bookings) {
-        setAllBookings(result.bookings);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   useEffect(() => {
     if (userEmail) {
@@ -71,22 +80,34 @@ export const useBookings = (userEmail?: string) => {
     }
   }, [userEmail]);
 
-  useEffect(() => {
-    if (selectedDate) {
-      fetchBookedSlotsForDate(selectedDate);
+  const fetchAllBookings = async (year: number, month: number) => {
+    try {
+      setLoading(true);
+      const result = await getBookingsByMonth(year, month);
+      if (result.success && result.bookings) {
+        setAllBookings(result.bookings);
+      }
+    } catch (err) {
+      console.error("Error fetching all bookings:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [selectedDate]);
+  };
 
   const fetchBookings = async () => {
     if (!userEmail) return;
+
     try {
       setLoading(true);
       const result = await getBookingsByEmail(userEmail);
       if (result.success && result.bookings) {
         setBookings(result.bookings);
+      } else {
+        setError(result.error || "Erreur lors du chargement des réservations");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching user bookings:", err);
+      setError("Une erreur est survenue");
     } finally {
       setLoading(false);
     }
@@ -97,31 +118,86 @@ export const useBookings = (userEmail?: string) => {
       const slots = await getBookedSlots(date);
       setBookedSlots(slots);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching booked slots:", err);
     }
   };
 
   const isDateBooked = (date: string, time: string): boolean => {
     return allBookings.some(
-      (slot: any) => slot.date === date && slot.time === time
+      (booking) =>
+        booking.date === date &&
+        booking.time === time &&
+        (booking.status === "PENDING" || booking.status === "CONFIRMED")
     );
   };
-  const isDayFullyBooked = (date: string) => {
-    const bookingsForDay = allBookings.filter((b) => b.date === date);
 
-    return TIME_SLOTS.every((slot) =>
+  const isDayFullyBooked = (date: string): boolean => {
+    if (!availableTimeSlots || availableTimeSlots.length === 0) {
+      return false;
+    }
+
+    const bookingsForDay = allBookings.filter(
+      (b) =>
+        b.date === date && (b.status === "PENDING" || b.status === "CONFIRMED")
+    );
+
+    return availableTimeSlots.every((slot) =>
       bookingsForDay.some((b) => b.time === slot)
     );
   };
 
-  const handleBooking = async (bookingData: {
-    name: string;
-    email: string;
-    phone?: string;
-  }) => {
-    if (!selectedDate || !selectedTime) {
-      setError("Veuillez sélectionner une date et une heure");
+  // Add or remove a time slot from selection
+  const toggleTimeSlot = (date: string, time: string) => {
+    const slotIndex = selectedTimeSlots.findIndex(
+      (slot) => slot.date === date && slot.time === time
+    );
+
+    if (slotIndex > -1) {
+      // Remove slot
+      setSelectedTimeSlots((prev) =>
+        prev.filter((_, index) => index !== slotIndex)
+      );
+    } else {
+      // Add slot (if under limit)
+
+      if (selectedTimeSlots.length < maxSessions) {
+        setSelectedTimeSlots((prev) => [...prev, { date, time }]);
+      } else {
+        setError(`Vous pouvez sélectionner jusqu'à ${maxSessions} créneaux`);
+        setTimeout(() => setError(null), 3000);
+      }
+    }
+  };
+
+  // Check if a time slot is selected
+  const isTimeSlotSelected = (date: string, time: string): boolean => {
+    return selectedTimeSlots.some(
+      (slot) => slot.date === date && slot.time === time
+    );
+  };
+
+  // Clear all selected time slots
+  const clearTimeSlots = () => {
+    setSelectedTimeSlots([]);
+  };
+
+  const handleBooking = async (bookingData: BookingFormData) => {
+    if (selectedTimeSlots.length === 0) {
+      setError("Veuillez sélectionner au moins un créneau horaire");
       return false;
+    }
+
+    if (!selectedPackage) {
+      setError("Veuillez sélectionner un forfait");
+      return false;
+    }
+
+    // Check if any selected slot is already booked
+    for (const slot of selectedTimeSlots) {
+      if (isDateBooked(slot.date, slot.time)) {
+        setError(`Le créneau ${slot.date} à ${slot.time} est déjà réservé`);
+        return false;
+      }
     }
 
     setLoading(true);
@@ -130,14 +206,12 @@ export const useBookings = (userEmail?: string) => {
     try {
       const result = await createBooking({
         ...bookingData,
+        timeSlots: selectedTimeSlots,
         packageId: selectedPackage,
-        date: selectedDate,
-        time: selectedTime,
       });
 
       if (!result.success) {
-        console.log(result);
-        setError(result.error || "Erreur");
+        setError(result.error || "Échec de la création de la réservation");
         return false;
       }
 
@@ -145,25 +219,56 @@ export const useBookings = (userEmail?: string) => {
         setBookings((prev) => [...prev, result.booking]);
       }
 
-      setBookedSlots((prev) => [...prev, selectedTime]);
+      // Update booked slots for all selected dates
+      const uniqueDates = [...new Set(selectedTimeSlots.map((s) => s.date))];
+      for (const date of uniqueDates) {
+        await fetchBookedSlotsForDate(date);
+      }
+
+      if (result.booking) {
+        // Update allBookings with new slots
+        const newSlots = selectedTimeSlots.map((slot) => ({
+          date: slot.date,
+          time: slot.time,
+          status: "PENDING",
+        }));
+        setAllBookings((prev) => [...prev, ...newSlots]);
+      }
+
       setShowConfirmation(true);
+
+      // Send confirmation email
+      try {
+        const slotsText = selectedTimeSlots
+          .map((slot) => `${slot.date} à ${slot.time}`)
+          .join("<br/>");
+
+        await sendEmail({
+          to: bookingData.email,
+          subject: "Confirmation de votre réservation",
+          html: `
+            <h2>Réservation confirmée</h2>
+            <p>Bonjour ${bookingData.name},</p>
+            <p>Votre réservation a été confirmée :</p>
+            <p><strong>Créneaux réservés :</strong><br/>${slotsText}</p>
+            <p><strong>Forfait:</strong> ${result.booking.package.name}</p>
+            <p><strong>Prix:</strong> ${result.booking.package.price}€</p>
+          `,
+        });
+      } catch (emailError) {
+        console.error("Error sending email:", emailError);
+      }
 
       setTimeout(() => {
         setShowConfirmation(false);
-        setSelectedDate(null);
-        setSelectedTime(null);
+        clearTimeSlots();
+        setSelectedPackage(null);
       }, 3000);
-      await sendEmail({
-        to: bookingData.email,
-        subject: "Séance gratuite",
-        html: `<h2>New Contact Message</h2>
-    <p><strong>Name:</strong> ${bookingData.email}</p>,
-    <p><strong>date:</strong> ${selectedDate}</p>,
-    <p><strong>time:</strong> ${selectedTime}</p>`,
-      });
+
       return true;
     } catch (err) {
-      setError("Une erreur est survenue");
+      console.error("Error creating booking:", err);
+      setError("Une erreur est survenue lors de la réservation");
       return false;
     } finally {
       setLoading(false);
@@ -174,40 +279,51 @@ export const useBookings = (userEmail?: string) => {
     if (!bookingId) return false;
 
     setLoading(true);
+    setError(null);
 
     try {
       const result = await cancelBookingAction(bookingId);
 
       if (!result.success) {
-        setError(result.error || "Erreur");
+        setError(result.error || "Échec de l'annulation");
         return false;
       }
 
       setBookings((prev) => prev.filter((b) => b._id !== bookingId));
 
-      if (selectedDate) {
-        fetchBookedSlotsForDate(selectedDate);
-      }
+      // Refresh month bookings
+      await fetchAllBookings(currentYear, currentMonth + 1);
 
       return true;
     } catch (err) {
-      setError("Erreur");
+      console.error("Error cancelling booking:", err);
+      setError("Une erreur est survenue lors de l'annulation");
       return false;
     } finally {
       setLoading(false);
     }
   };
+
+  const adjustDateToNewMonth = (newMonth: number, newYear: number) => {
+    // Clear time slots when changing months
+    clearTimeSlots();
+  };
+
   const goToPreviousMonth = () => {
     if (currentMonth === 0) {
+      const newYear = currentYear - 1;
       setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
+      setCurrentYear(newYear);
+      adjustDateToNewMonth(11, newYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newDate = `${currentYear - 1}-12-${day}`;
         setSelectedDate(newDate);
       }
     } else {
-      setCurrentMonth(currentMonth - 1);
+      const newMonth = currentMonth - 1;
+      setCurrentMonth(newMonth);
+      adjustDateToNewMonth(newMonth, currentYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newMonth = String(currentMonth).padStart(2, "0");
@@ -219,8 +335,10 @@ export const useBookings = (userEmail?: string) => {
 
   const goToNextMonth = () => {
     if (currentMonth === 11) {
+      const newYear = currentYear + 1;
       setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
+      setCurrentYear(newYear);
+      adjustDateToNewMonth(0, newYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newDate = `${currentYear + 1}-01-${day}`;
@@ -228,7 +346,9 @@ export const useBookings = (userEmail?: string) => {
         setSelectedDate(newDate);
       }
     } else {
-      setCurrentMonth(currentMonth + 1);
+      const newMonth = currentMonth + 1;
+      setCurrentMonth(newMonth);
+      adjustDateToNewMonth(newMonth, currentYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newMonth = String(currentMonth + 2).padStart(2, "0");
@@ -238,28 +358,35 @@ export const useBookings = (userEmail?: string) => {
       }
     }
   };
+
   return {
-    allBookings,
     bookings,
-    selectedDate,
-    selectedTime,
+    allBookings,
+    selectedTimeSlots,
     selectedPackage,
+    maxSessions,
     showConfirmation,
     loading,
     error,
     currentMonth,
     currentYear,
-    goToPreviousMonth,
-    goToNextMonth,
-    setSelectedDate,
-    setSelectedTime,
+    bookedSlots,
+    selectedDate,
     setSelectedPackage,
+    setSelectedDate,
+    setMaxSessions,
+    setAllBookings,
     setError,
+    toggleTimeSlot,
+    isTimeSlotSelected,
+    clearTimeSlots,
     isDateBooked,
+    isDayFullyBooked,
     handleBooking,
     cancelBooking,
     fetchBookings,
-    isDayFullyBooked,
-    setBookings,
+    fetchAllBookings,
+    goToPreviousMonth,
+    goToNextMonth,
   };
 };

@@ -9,33 +9,28 @@ import { useBookings } from "@/hooks/use-bookings";
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useTimeSlots } from "@/hooks/use-timeslots";
 
-export const TIME_SLOTS = [
-  "09:00",
-  "10:30",
-  "12:00",
-  "14:00",
-  "15:30",
-  "17:00",
-];
-
 export default function BookingPage() {
   const [userEmail, setUserEmail] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
 
   const {
-    selectedDate,
+    selectedTimeSlots,
+    maxSessions,
     currentYear,
     currentMonth,
+    selectedDate,
     goToPreviousMonth,
     goToNextMonth,
-    selectedTime,
+    toggleTimeSlot,
     selectedPackage,
     showConfirmation,
     loading,
     error,
-    setSelectedDate,
-    setSelectedTime,
+    isTimeSlotSelected,
+    clearTimeSlots,
     setSelectedPackage,
+    setSelectedDate,
+    setMaxSessions,
     isDayFullyBooked,
     setError,
     isDateBooked,
@@ -48,10 +43,11 @@ export default function BookingPage() {
   } = useTimeSlots(selectedDate);
 
   const handleReserverClick = () => {
-    if (!selectedDate || !selectedTime) {
-      setError("Veuillez sélectionner une date et une heure");
+    if (selectedTimeSlots.length === 0) {
+      setError("Veuillez sélectionner au moins un créneau horaire");
       return;
     }
+
     setShowModal(true);
   };
 
@@ -66,6 +62,15 @@ export default function BookingPage() {
       setShowModal(false);
     }
     return success;
+  };
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date);
+    setError(null);
+  };
+
+  const handleTimeToggle = (date: string, time: string) => {
+    toggleTimeSlot(selectedDate!, time);
+    setError(null);
   };
 
   return (
@@ -99,11 +104,7 @@ export default function BookingPage() {
               currentMonth={currentMonth}
               currentYear={currentYear}
               goToPreviousMonth={goToPreviousMonth}
-              onSelectDate={(date) => {
-                setSelectedDate(date);
-                setSelectedTime(null);
-                setError(null);
-              }}
+              onSelectDate={handleDateSelect}
             />
 
             {timeSlotsLoading ? (
@@ -126,21 +127,45 @@ export default function BookingPage() {
               <TimeSlots
                 timeSlots={availableTimes}
                 selectedDate={selectedDate}
-                selectedTime={selectedTime}
-                onSelectTime={(time) => {
-                  setSelectedTime(time);
-                  setError(null);
-                }}
+                selectedTimeSlots={selectedTimeSlots}
+                onToggleTime={handleTimeToggle}
                 isDateBooked={isDateBooked}
               />
+            )}
+
+            {selectedTimeSlots.length > 0 && (
+              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm font-medium text-blue-900 mb-2">
+                  Créneaux sélectionnés ({selectedTimeSlots.length}/
+                  {maxSessions})
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedTimeSlots.map((slot, idx) => (
+                    <div
+                      key={idx}
+                      className="inline-flex items-center gap-2 bg-white px-3 py-1 rounded-full text-sm"
+                    >
+                      <span>
+                        {slot.date} - {slot.time}
+                      </span>
+                      <button
+                        onClick={() => handleTimeToggle(slot.date, slot.time)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             <div className="mt-6 flex items-center gap-4">
               <button
                 onClick={handleReserverClick}
-                disabled={!selectedDate || !selectedTime || loading}
+                disabled={selectedTimeSlots.length === 0 || loading}
                 className={`px-6 py-3 rounded-lg font-semibold ${
-                  selectedDate && selectedTime && !loading
+                  selectedTimeSlots.length > 0 && !loading
                     ? "bg-purple-600 text-white hover:bg-purple-700"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
@@ -155,14 +180,6 @@ export default function BookingPage() {
               )}
             </div>
           </div>
-
-          {/* {userEmail && bookings.length > 0 && (
-            <BookingsList
-              bookings={bookings}
-              onCancel={cancelBooking}
-              loading={loading}
-            />
-          )} */}
         </div>
 
         <BookingInfo />
@@ -173,7 +190,7 @@ export default function BookingPage() {
         onClose={() => setShowModal(false)}
         onSubmit={handleModalSubmit}
         selectedDate={selectedDate}
-        selectedTime={selectedTime}
+        selectedTimeSlots={selectedTimeSlots}
         selectedPackage={selectedPackage}
         onPackageSelect={(id) => setSelectedPackage(id)}
         loading={loading}

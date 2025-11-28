@@ -1,16 +1,22 @@
 "use server";
 
+import BookingDate from "@/database/booking-date.model";
+import BookingTime from "@/database/booking-time.model";
 import Booking from "@/database/booking.model";
 import Package from "@/database/package.modal";
 import connectDB from "@/lib/mongodb";
 import mongoose from "mongoose";
 
+interface TimeSlot {
+  date: string;
+  time: string;
+}
+
 interface CreateBookingParams {
   name: string;
   email: string;
   phone?: string;
-  date: string;
-  time: string;
+  timeSlots: TimeSlot[];
   notes?: string;
   packageId?: string;
 }
@@ -20,27 +26,75 @@ export async function createBooking(data: CreateBookingParams) {
   try {
     await connectDB();
 
-    const { name, email, phone, date, time, notes, packageId } = data;
+    const { name, email, phone, timeSlots, notes, packageId } = data;
 
-    if (!name || !email || !date || !time || !packageId) {
+    if (!name || !email || !timeSlots || timeSlots.length === 0 || !packageId) {
       return {
         success: false,
         error: "Le nom, l'email, la date et l'heure sont requis",
       };
     }
 
-    // Check if slot is already booked
-    const existingBooking = await Booking.findOne({
-      date,
-      time,
-      status: { $in: ["PENDING", "CONFIRMED"] },
+    // Check if any of the time slots are already booked
+    for (const slot of timeSlots) {
+      const existingBookingDate = await BookingDate.findOne({
+        date: slot.date,
+      }).populate("times");
+
+      if (existingBookingDate) {
+        const existingTime = await BookingTime.findOne({
+          _id: { $in: existingBookingDate.times },
+          time: slot.time,
+          status: { $in: ["PENDING", "CONFIRMED"] },
+        });
+
+        if (existingTime) {
+          return {
+            success: false,
+            error: `Le créneau ${slot.date} à ${slot.time} est déjà réservé`,
+          };
+        }
+      }
+    }
+    // Group time slots by date
+    const dateGroups: { [key: string]: string[] } = {};
+    timeSlots.forEach((slot) => {
+      if (!dateGroups[slot.date]) {
+        dateGroups[slot.date] = [];
+      }
+      dateGroups[slot.date].push(slot.time);
     });
 
-    if (existingBooking) {
-      return {
-        success: false,
-        error: "Ce créneau est déjà réservé",
-      };
+    // Create BookingTime and BookingDate documents
+    const dateIds = [];
+
+    for (const [date, times] of Object.entries(dateGroups)) {
+      // Create BookingTime documents for each time
+      const timeIds = [];
+      for (const time of times) {
+        const bookingTime = await BookingTime.create({
+          time,
+          status: "PENDING",
+        });
+        timeIds.push(bookingTime._id);
+      }
+
+      // Check if BookingDate exists for this date
+      let bookingDate = await BookingDate.findOne({ date });
+
+      if (bookingDate) {
+        // Add new times to existing date
+        bookingDate.times.push(...timeIds);
+        await bookingDate.save();
+      } else {
+        // Create new BookingDate
+        bookingDate = await BookingDate.create({
+          date,
+          times: timeIds,
+        });
+      }
+
+      dateIds.push(bookingDate._id);
     }
     const freePackage = await Package.findOne({ name: "free" });
     // Check if this email already has a "single" booking
@@ -62,12 +116,23 @@ export async function createBooking(data: CreateBookingParams) {
       name,
       email,
       phone: phone || undefined,
-      date,
-      time,
+      date: dateIds,
       notes: notes || undefined,
       package: new mongoose.Types.ObjectId(packageId),
       status: "PENDING",
     });
+
+    await booking.populate([
+      {
+        path: "package",
+      },
+      {
+        path: "date",
+        populate: {
+          path: "times",
+        },
+      },
+    ]);
 
     return {
       success: true,
@@ -114,6 +179,12 @@ export async function getBookingsByEmail(email: string) {
       status: { $in: ["PENDING", "CONFIRMED"] },
     })
       .populate("package")
+      .populate({
+        path: "date",
+        populate: {
+          path: "times",
+        },
+      })
       .sort({ date: 1, time: 1 })
       .lean();
 
@@ -133,24 +204,75 @@ export async function getBookingsByEmail(email: string) {
 export async function getBookingsByMonth(year: number, month: number) {
   try {
     await connectDB();
-    // Pad month to 2 digits
-    const pad = (n: number) => n.toString().padStart(2, "0");
-    const monthStr = pad(month); // JS months are 0-based
+    if (!year || !month) {
+      return {
+        success: false,
+        error: "Année et mois requis",
+      };
+    }
 
-    // Construct start and end strings for string comparison
-    const startDateStr = `${year}-${monthStr}-01`;
-    const endDateStr = `${year}-${monthStr}-31`; // 31 works because strings sort lexically
+    const monthStr = String(month).padStart(2, "0");
+    const startDate = `${year}-${monthStr}-01`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
+    // Find all bookings for the month
     const bookings = await Booking.find({
-      date: { $gte: startDateStr, $lte: endDateStr },
+      // Get bookings that were created in this month or have dates in this month
     })
-      .populate("package")
-      .sort({ date: 1, time: 1 })
-      .lean();
+      .populate({
+        path: "date",
+        model: "BookingDate",
+        populate: {
+          path: "times",
+          model: "BookingTime",
+          match: { status: { $in: ["PENDING", "CONFIRMED"] } },
+        },
+      })
+      .populate({
+        path: "package",
+        model: "Package",
+      });
+
+    // Filter and flatten to get all date-time combinations for this month
+    const monthBookings: any[] = [];
+
+    for (const booking of bookings) {
+      if (booking.date && Array.isArray(booking.date)) {
+        for (const bookingDate of booking.date) {
+          // Check if date falls within the month range
+          if (bookingDate.date >= startDate && bookingDate.date <= endDate) {
+            if (bookingDate.times && bookingDate.times.length > 0) {
+              for (const bookingTime of bookingDate.times) {
+                monthBookings.push({
+                  _id: booking._id,
+                  name: booking.name,
+                  email: booking.email,
+                  phone: booking.phone || null,
+                  date: bookingDate.date,
+                  time: bookingTime.time,
+                  status: bookingTime.status,
+                  bookingStatus: booking.status,
+                  message: booking.message || null,
+                  package: {
+                    _id: booking.package._id,
+                    name: booking.package.name,
+                    price: booking.package.price,
+                    sessions: booking.package.sessions || null,
+                  },
+                  createdAt: booking.createdAt,
+                  updatedAt: booking.updatedAt,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
 
     return {
       success: true,
-      bookings: JSON.parse(JSON.stringify(bookings)),
+      bookings: JSON.parse(JSON.stringify(monthBookings)),
     };
   } catch (error) {
     console.error("Error fetching bookings by month:", error);
@@ -169,17 +291,32 @@ export async function cancelBooking(bookingId: string) {
     if (!bookingId) {
       return { success: false, error: "ID de réservation requis" };
     }
-
-    const booking = await Booking.findByIdAndUpdate(
-      bookingId,
-      { status: "CANCELLED" },
-      { new: true }
-    ).populate("package");
+    const booking = await Booking.findById(bookingId).populate({
+      path: "date",
+      populate: {
+        path: "times",
+      },
+    });
 
     if (!booking) {
       return { success: false, error: "Réservation non trouvée" };
     }
+    // Update status of all associated times
+    for (const date of booking.date as any[]) {
+      if (date.times && date.times.length > 0) {
+        for (const time of date.times) {
+          await BookingTime.findByIdAndUpdate(time._id, {
+            status: "CANCELLED",
+          });
+        }
+      }
+    }
 
+    // Update main booking status
+    booking.status = "CANCELLED";
+    await booking.save();
+
+    await booking.populate("package");
     return {
       success: true,
       booking: JSON.parse(JSON.stringify(booking)),
@@ -200,55 +337,17 @@ export async function getBookedSlots(date: string) {
 
     if (!date) return [];
 
-    const bookings = await Booking.find({
-      date,
-      status: { $in: ["PENDING", "CONFIRMED"] },
-    }).select("time");
-    return bookings.map((booking) => booking.time);
+    const bookingDate = await BookingDate.findOne({ date }).populate({
+      path: "times",
+      match: { status: { $in: ["PENDING", "CONFIRMED"] } },
+    });
+
+    if (!bookingDate || !bookingDate.times) return [];
+
+    return bookingDate.times.map((time: any) => time.time);
   } catch (error) {
     console.error("Error fetching booked slots:", error);
     return [];
-  }
-}
-
-// Get all bookings with filters (for admin)
-export async function getAllBookingsAdmin(filters?: {
-  status?: string;
-  date?: string;
-  email?: string;
-}) {
-  try {
-    await connectDB();
-
-    const query: any = {};
-
-    if (filters?.status) {
-      query.status = filters.status;
-    }
-
-    if (filters?.date) {
-      query.date = filters.date;
-    }
-
-    if (filters?.email) {
-      query.email = { $regex: filters.email, $options: "i" };
-    }
-
-    const bookings = await Booking.find(query)
-      .populate("package")
-      .sort({ date: -1, time: -1 })
-      .lean();
-
-    return {
-      success: true,
-      bookings: JSON.parse(JSON.stringify(bookings)),
-    };
-  } catch (error) {
-    console.error("Error fetching all bookings:", error);
-    return {
-      success: false,
-      error: "Échec de la récupération des réservations",
-    };
   }
 }
 
@@ -267,11 +366,12 @@ export async function updateBookingStatus(
       };
     }
 
-    const booking = await Booking.findByIdAndUpdate(
-      bookingId,
-      { status },
-      { new: true, runValidators: true }
-    );
+    const booking = await Booking.findById(bookingId).populate({
+      path: "date",
+      populate: {
+        path: "times",
+      },
+    });
 
     if (!booking) {
       return {
@@ -279,6 +379,21 @@ export async function updateBookingStatus(
         error: "Réservation non trouvée",
       };
     }
+
+    // Update status of all associated times
+    for (const date of booking.date as any[]) {
+      if (date.times && date.times.length > 0) {
+        for (const time of date.times) {
+          await BookingTime.findByIdAndUpdate(time._id, { status });
+        }
+      }
+    }
+
+    // Update main booking status
+    booking.status = status;
+    await booking.save();
+
+    await booking.populate("package");
 
     return {
       success: true,
@@ -289,50 +404,6 @@ export async function updateBookingStatus(
     return {
       success: false,
       error: "Échec de la mise à jour du statut",
-    };
-  }
-}
-
-// Get booking statistics
-export async function getBookingStats() {
-  try {
-    await connectDB();
-
-    const totalBookings = await Booking.countDocuments();
-    const pendingBookings = await Booking.countDocuments({ status: "PENDING" });
-    const confirmedBookings = await Booking.countDocuments({
-      status: "CONFIRMED",
-    });
-    const completedBookings = await Booking.countDocuments({
-      status: "COMPLETED",
-    });
-    const cancelledBookings = await Booking.countDocuments({
-      status: "CANCELLED",
-    });
-
-    // Get today's bookings
-    const today = new Date().toISOString().split("T")[0];
-    const todayBookings = await Booking.countDocuments({
-      date: today,
-      status: { $in: ["PENDING", "CONFIRMED"] },
-    });
-
-    return {
-      success: true,
-      stats: {
-        total: totalBookings,
-        pending: pendingBookings,
-        confirmed: confirmedBookings,
-        completed: completedBookings,
-        cancelled: cancelledBookings,
-        today: todayBookings,
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching booking stats:", error);
-    return {
-      success: false,
-      error: "Échec de la récupération des statistiques",
     };
   }
 }

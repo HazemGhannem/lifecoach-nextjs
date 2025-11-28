@@ -2,6 +2,9 @@
 import Link from "next/link";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { usePackages } from "@/hooks/use-package";
+import { useBookings } from "@/hooks/use-bookings";
+import { useRouter } from "next/navigation";
+import { useBooking } from "@/context/BookingContext";
 
 export interface Package {
   _id: string;
@@ -17,7 +20,15 @@ export interface Package {
 }
 
 export default function PricingSection() {
+  const router = useRouter();
   const { isLoading, error, packages } = usePackages();
+  const { setMaxSessions, setSelectedPackage } = useBooking();
+
+  const handleClick = (pkg: any) => {
+    setMaxSessions(pkg.SeanceNumber);
+    setSelectedPackage(pkg._id);
+    router.push("/booking");
+  };
   return (
     <div className="  py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -151,8 +162,8 @@ export default function PricingSection() {
                         </li>
                       ))}
                     </ul>
-                    <Link
-                      href="/booking"
+                    <button
+                      onClick={() => handleClick(pkg)}
                       className={`block w-full text-center py-2.5 rounded-lg transition font-semibold text-sm ${
                         pkg.highlighted
                           ? "bg-white text-purple-600 hover:bg-purple-100"
@@ -160,7 +171,7 @@ export default function PricingSection() {
                       }`}
                     >
                       Réserver
-                    </Link>
+                    </button>
                   </div>
                 ))}
             </div>
@@ -213,12 +224,12 @@ export default function PricingSection() {
                         </li>
                       ))}
                     </ul>
-                    <Link
-                      href="/booking"
+                    <button
+                      onClick={() => handleClick(pkg)}
                       className="block w-full text-center bg-white text-purple-600 py-3 rounded-lg font-semibold transition hover:bg-purple-100"
                     >
                       Réserver
-                    </Link>
+                    </button>
                   </div>
                 ))}
             </div>

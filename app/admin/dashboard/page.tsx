@@ -41,7 +41,7 @@ export default function AdminDashboard() {
     deletePackage,
   } = usePackages();
 
-  const { allBookings, setBookings, bookings } = useBookings();
+  const { allBookings, setAllBookings, bookings } = useBookings();
 
   const [formData, setFormData] = useState<Partial<PackageInput>>({
     name: "",
@@ -109,11 +109,11 @@ export default function AdminDashboard() {
   ) => {
     try {
       await updateBookingStatus(id, status);
-      // setBookings(
-      //   allBookings.map((b) =>
-      //     b._id === id ? { ...b, status, updatedAt: new Date() } : b
-      //   )
-      // );
+      setAllBookings(
+        allBookings.map((b) =>
+          b._id === id ? { ...b, status, updatedAt: new Date() } : b
+        )
+      );
 
       const booking = allBookings.find((b) => b._id === id);
       console.log(bookings);
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
           booking.date,
           booking.time
         );
-        console.log(result);
+
         if (result?.success) {
           setToast({
             message: "changement de status.",
@@ -217,6 +217,14 @@ export default function AdminDashboard() {
           <BookingsTable
             bookings={allBookings}
             onStatusChange={handleUpdateBookingStatus}
+            type={activeTab}
+          />
+        )}
+        {activeTab === "freeBookings" && (
+          <BookingsTable
+            bookings={allBookings}
+            onStatusChange={handleUpdateBookingStatus}
+            type={activeTab}
           />
         )}
         {/* TimeSlot Tab */}
