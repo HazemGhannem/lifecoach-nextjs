@@ -40,8 +40,10 @@ export default function BookingModal({
   });
   const [paypalError, setPaypalError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const { isLoading, error: errorPackage, packages } = usePackages();
-  console.log(selectedPackage);
+  const { isLoading, packages } = usePackages();
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  console.log("=============>", selectedPackage);
   if (!isOpen) return null;
 
   const handleSubmit = async (e: FormEvent) => {
@@ -66,7 +68,12 @@ export default function BookingModal({
   };
 
   const selectedPackageData = packages.find((p) => p._id === selectedPackage);
-
+  const amount = selectedPackageData
+    ? selectedPackageData.discount
+      ? selectedPackageData.price +
+        (selectedPackageData.price * selectedPackageData.discount) / 100
+      : selectedPackageData.price
+    : 0;
   const createOrder = async () => {
     const res = await fetch("/api/payment", {
       method: "POST",
@@ -101,6 +108,7 @@ export default function BookingModal({
 
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "Capture failed");
+      setPaymentSuccess(true);
     } catch (err) {
       console.error(err);
       setPaypalError("Payment failed. Please try again.");
@@ -114,7 +122,6 @@ export default function BookingModal({
     setPaypalError("An error occurred with PayPal. Please try again.");
   };
   // Static amount for now
-  const amount = 300;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -177,9 +184,7 @@ export default function BookingModal({
                   <span className="text-sm font-medium text-gray-700">
                     {selectedPackageData.name}
                   </span>
-                  <span className="font-bold text-purple-600">
-                    {selectedPackageData.price}€
-                  </span>
+                  <span className="font-bold text-purple-600">{amount}€</span>
                 </div>
               )}
             </div>
@@ -236,7 +241,7 @@ export default function BookingModal({
                               {pkg.name}
                             </span>
                             <span className="font-bold text-purple-600">
-                              {pkg.price}€
+                              {amount}€
                             </span>
                           </div>
                           {pkg.features && pkg.features.length > 0 && (
@@ -339,42 +344,53 @@ export default function BookingModal({
                   {paypalError}
                 </div>
               )}
-
-              <PayPalScriptProvider
-                options={{
-                  clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
-                  currency: "EUR",
-                  intent: "capture",
-                }}
-              >
-                <PayPalButtons
-                  style={{ layout: "vertical" }}
-                  disabled={isProcessing || !formData.name || !formData.email}
-                  // Create order by calling backend
-                  createOrder={async () => {
-                    setPaypalError("");
-                    try {
-                      const orderID = await createOrder(); // your function returns orderID
-                      return orderID;
-                    } catch (err) {
-                      setPaypalError(
-                        "Failed to create order. Please try again."
-                      );
-                      throw err;
-                    }
+              {paymentSuccess && (
+                <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg text-sm">
+                  Paiement effectué avec succès.
+                </div>
+              )}
+              {amount !== 0 && (
+                <PayPalScriptProvider
+                  options={{
+                    clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
+                    currency: "EUR",
+                    intent: "capture",
                   }}
-                  // Capture order by calling backend
-                  onApprove={async (data) => {
-                    setPaypalError("");
-                    try {
-                      await onApprove(data.orderID); // send orderID to backend
-                    } catch (err) {
-                      setPaypalError("Error capturing PayPal payment");
+                >
+                  <PayPalButtons
+                    style={{ layout: "vertical" }}
+                    disabled={
+                      isProcessing ||
+                      !formData.name ||
+                      !formData.email ||
+                      !selectedPackageData
                     }
-                  }}
-                  onError={onError}
-                />
-              </PayPalScriptProvider>
+                    // Create order by calling backend
+                    createOrder={async () => {
+                      setPaypalError("");
+                      try {
+                        const orderID = await createOrder(); // your function returns orderID
+                        return orderID;
+                      } catch (err) {
+                        setPaypalError(
+                          "Failed to create order. Please try again."
+                        );
+                        throw err;
+                      }
+                    }}
+                    // Capture order by calling backend
+                    onApprove={async (data) => {
+                      setPaypalError("");
+                      try {
+                        await onApprove(data.orderID); // send orderID to backend
+                      } catch (err) {
+                        setPaypalError("Error capturing PayPal payment");
+                      }
+                    }}
+                    onError={onError}
+                  />
+                </PayPalScriptProvider>
+              )}
             </div>
             {/* Buttons */}
             <div className="flex gap-3 pt-2">

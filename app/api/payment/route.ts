@@ -62,7 +62,7 @@ async function capturePayPalOrder(orderID: string, accessToken: string) {
 }
 export async function POST(req: Request) {
   const body = await req.json();
-  const { type, name, email, amount, orderID } = body;
+  const { type, amount, orderID } = body;
 
   const PAYPAL_API_URL =
     process.env.NODE_ENV === "development"

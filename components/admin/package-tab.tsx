@@ -70,7 +70,7 @@ export default function PackagesTable({
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  {pkg.price}€
+                  {pkg.price ? `${pkg.price}€` : "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                   {pkg.SeanceNumber || "-"}
