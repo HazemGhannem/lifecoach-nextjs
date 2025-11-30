@@ -314,7 +314,7 @@ export const useBookings = (
       const newYear = currentYear - 1;
       setCurrentMonth(11);
       setCurrentYear(newYear);
-      adjustDateToNewMonth(11, newYear);
+      // adjustDateToNewMonth(11, newYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newDate = `${currentYear - 1}-12-${day}`;
@@ -323,7 +323,7 @@ export const useBookings = (
     } else {
       const newMonth = currentMonth - 1;
       setCurrentMonth(newMonth);
-      adjustDateToNewMonth(newMonth, currentYear);
+      // adjustDateToNewMonth(newMonth, currentYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newMonth = String(currentMonth).padStart(2, "0");
@@ -338,7 +338,7 @@ export const useBookings = (
       const newYear = currentYear + 1;
       setCurrentMonth(0);
       setCurrentYear(newYear);
-      adjustDateToNewMonth(0, newYear);
+      // adjustDateToNewMonth(0, newYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newDate = `${currentYear + 1}-01-${day}`;
@@ -348,7 +348,7 @@ export const useBookings = (
     } else {
       const newMonth = currentMonth + 1;
       setCurrentMonth(newMonth);
-      adjustDateToNewMonth(newMonth, currentYear);
+      //adjustDateToNewMonth(newMonth, currentYear);
       if (selectedDate) {
         const [year, month, day] = selectedDate.split("-");
         const newMonth = String(currentMonth + 2).padStart(2, "0");
