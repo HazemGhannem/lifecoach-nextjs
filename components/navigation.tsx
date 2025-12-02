@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Heart, Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useBooking } from "@/context/BookingContext";
@@ -11,13 +11,31 @@ export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { setMaxSessions, setSelectedPackage } = useBooking();
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+  // Check if token exists
+  useEffect(() => {
+    async function checkToken() {
+      try {
+        const res = await fetch("api/check-token");
+        setIsLoggedIn(res.ok); // true if status 200
+      } catch {
+        setIsLoggedIn(false);
+      }
+    }
+    if (pathname === "/admin/dashboard") checkToken();
+  }, [pathname]);
+  // Logout
+  async function handleLogout() {
+    await fetch("/api/logout", { method: "POST" });
+    setIsLoggedIn(false);
+    router.push("/admin/login"); // redirect after logout
+  }
   const navLinks = [
     { href: "/", label: "Accueil" },
     { href: "/booking", label: "Réserver" },
     { href: "/contact", label: "Contact" },
   ];
-
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
@@ -64,6 +82,15 @@ export default function Navigation() {
                 {link.label}
               </Link>
             ))}
+            {/* Logout Button */}
+            {isLoggedIn && (
+              <button
+                onClick={handleLogout}
+                className="ml-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+              >
+                Logout
+              </button>
+            )}
             {/* Theme Toggle */}
             <div className="ml-4">
               <ThemeToggle />
@@ -105,6 +132,18 @@ export default function Navigation() {
                 {link.label}
               </Link>
             ))}
+            {/* Mobile Logout */}
+            {isLoggedIn && (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       )}

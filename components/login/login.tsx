@@ -21,11 +21,9 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      console.log(data);
       if (data.success) {
         router.push("/admin/dashboard");
       } else {
-        console.log(data);
         alert(data.message);
       }
     } catch (error) {
