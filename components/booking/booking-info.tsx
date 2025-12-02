@@ -6,7 +6,7 @@ export default function BookingInfo() {
       <div className="bg-white rounded-lg shadow p-6">
         <h4 className="font-semibold mb-3 text-black">Informations</h4>
         <p className="text-sm text-gray-600 mb-4">
-          Les séances durent 40 minutes. Choisissez une date puis une heure et
+          Les séances durent 15 minutes. Choisissez une date puis une heure et
           appuyez sur "Réserver". Vous recevrez une confirmation ici. Pour le
           paiement et la confirmation finale, nous vous contacterons par email.
         </p>
