@@ -1,12 +1,18 @@
-import ResetPasswordView from '@/components/resetPassword/resetPassword';
-import React from 'react'
+import ResetPasswordView from "@/components/resetPassword/resetPassword";
+import React, { Suspense } from "react";
 
 const page = () => {
   return (
-    <div>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600" />
+        </div>
+      }
+    >
       <ResetPasswordView />
-    </div>
+    </Suspense>
   );
-}
+};
 
-export default page
+export default page;
