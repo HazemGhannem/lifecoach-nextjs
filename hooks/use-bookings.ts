@@ -7,6 +7,8 @@ import {
   cancelBooking as cancelBookingAction,
   getBookedSlots,
   getBookingsByMonth,
+  sendBookingConfirmationEmail,
+  sendOwnerBookingNotificationEmail,
 } from "@/lib/actions/booking.action";
 import { sendEmail } from "@/lib/email";
 import { useBooking } from "@/context/BookingContext";
@@ -242,7 +244,28 @@ export const useBookings = (
         const slotsText = selectedTimeSlots
           .map((slot) => `${slot.date} à ${slot.time}`)
           .join("<br/>");
-
+        let finalPrice = result.booking.package.price;
+        if (result.booking.package.discount) {
+          finalPrice =
+            (result.booking.package.price * result.booking.package.discount) /
+            100;
+        }
+        await sendBookingConfirmationEmail({
+          name: bookingData.name,
+          email: bookingData.email,
+          slotsText,
+          packageName: result.booking.package.name,
+          price: finalPrice,
+        });
+        // Send notification email to owner
+        await sendOwnerBookingNotificationEmail({
+          clientName: bookingData.name,
+          clientEmail: bookingData.email,
+          slotsText,
+          packageName: result.booking.package.name,
+          price: finalPrice,
+        });
+        /*
         await sendEmail({
           to: bookingData.email,
           subject: "Confirmation de votre réservation",
@@ -263,6 +286,7 @@ export const useBookings = (
             }
           `,
         });
+        */
       } catch (emailError) {
         console.error("Error sending email:", emailError);
       }

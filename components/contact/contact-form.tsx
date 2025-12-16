@@ -23,12 +23,7 @@ export default function ContactForm() {
 
     if (!formData.name || !formData.email || !formData.message) return;
     // Render emails to HTML
-    const clientHtml = render(
-      <ClientEmail
-        name={formData.name}
-       
-      />
-    );
+    const clientHtml = render(<ClientEmail name={formData.name} />);
     const ownerHtml = render(
       <OwnerEmail
         name={formData.name}
@@ -39,7 +34,7 @@ export default function ContactForm() {
       />
     );
     const emailSendToOwner = await sendEmail({
-      to: formData.email, // or your admin email
+      to: process.env.EMAIL_USER!, // or your admin email
       subject: "New Contact Message",
       html: await ownerHtml,
     });
@@ -159,10 +154,10 @@ export default function ContactForm() {
       <div className="pt-4 text-sm text-gray-500">
         Ou écrivez directement à :{" "}
         <a
-          href="mailto:contact@leopoldine-almeida.com"
+          href="mailto:Support@leopoldinealmeida.com"
           className="text-purple-600 font-medium hover:text-purple-700"
         >
-          contact@leopoldine-almeida.com
+          Support@leopoldinealmeida.com
         </a>
       </div>
     </form>
