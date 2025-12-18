@@ -1,5 +1,5 @@
 import ResetPasswordView from "@/components/resetPassword/resetPassword";
-import React, { Suspense } from "react";
+import  { Suspense } from "react";
 
 const page = () => {
   return (

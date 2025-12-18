@@ -90,7 +90,7 @@ export default function SpecializationsSection() {
           src="/images/eq.jpeg"
           alt="Intelligence Émotionnelle"
           fill
-          className="object-cover"
+          className="object-fill"
         />
         <div className="absolute inset-0 bg-black/30" />
       </div>

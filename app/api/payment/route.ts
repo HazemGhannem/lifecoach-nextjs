@@ -1,11 +1,4 @@
 import { NextResponse } from "next/server";
-interface PaymentData {
-  name: string;
-  email: string;
-  amount: string;
-  orderID: string;
-  type: string;
-}
 function getPayPalApiUrl() {
   const isDev = process.env.NODE_ENV === "development";
   return isDev

@@ -12,7 +12,7 @@ export async function bookingStatusEmailTemplate(
     port: Number(process.env.EMAIL_PORT),
     secure: false,
     auth: {
-      user: process.env.EMAIL_USER,
+      user: process.env.NEXT_PUBLIC_EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
   });
@@ -84,7 +84,7 @@ Cordialement
   `;
   try {
     await transporter.sendMail({
-      from: `"Your App" <${process.env.EMAIL_USER}>`,
+      from: `"Léopoldine Almeida" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
       to,
       subject,
       html,

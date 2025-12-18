@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Heart, Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useBooking } from "@/context/BookingContext";
+import Image from "next/image";
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -60,7 +61,14 @@ export default function Navigation() {
             onClick={() => handleNavClick("/")}
             className="flex items-center"
           >
-            <Heart className="h-8 w-8 text-purple-600" />
+            {/* <Heart className="h-8 w-8 text-purple-600" /> */}
+            <Image
+              src="/images/logo.png"
+              alt="logo"
+              className="object-contain"
+              width={40}
+              height={40}
+            />
             <span className="ml-2 text-2xl font-bold text-gray-800 dark:text-white">
               Léopoldine Almeida
             </span>
