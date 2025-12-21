@@ -28,17 +28,31 @@ export interface PackageType {
   badge?: string;
   discount?: number;
 }
+export interface BookingTimeType {
+  _id: string;
+  time: string;
+  status: BookingStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BookingDateType {
+  _id: string;
+  date: string;
+  times: BookingTimeType[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface BookingType {
   _id: string;
   name: string;
   email: string;
   phone?: string;
-  date: string;
-  time: string;
+  dates: BookingDateType[];
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
   message?: string;
-  package?: string;
+  package?: PackageType;
   createdAt: Date;
   updatedAt: Date;
 }

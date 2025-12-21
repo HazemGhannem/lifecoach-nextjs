@@ -1,13 +1,17 @@
-'use client'
+"use client";
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@example.com");
+  const [password, setPassword] = useState("Password1234");
   const [isLoading, setIsLoading] = useState(false);
-
+  const router = useRouter();
+  const navigate = ()=>{
+    router.push("/admin/forgot-password");
+  }
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setIsLoading(true); // start loading
@@ -20,14 +24,12 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (data.success) {
-        console.log("1", data);
+        router.push("/admin/dashboard");
       } else {
-        console.log("2", data);
         alert(data.message);
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false); // stop loading
     }
@@ -104,8 +106,8 @@ export default function LoginPage() {
               </span>
             </label>
             <a
-              href="#"
-              className="text-sm text-purple-600  hover:text-purple-700  font-medium transition"
+              onClick={navigate}
+              className="text-sm text-purple-600  hover:text-purple-700  font-medium transition cursor-pointer"
             >
               Mot de passe oublié ?
             </a>

@@ -33,7 +33,7 @@ const specializations = [
   {
     icon: Shield,
     title: "Gestion de l'Anxiété",
-    image: "/images/anxiety-management.jpeg",
+    image: "/images/anxiety.jpg",
     description:
       "Vous n'êtes pas votre anxiété ; vous êtes la personne courageuse qui la traverse. Le poids constant de l'angoisse peut rendre chaque jour difficile. Mon rôle est de vous fournir un espace sécurisé et des stratégies concrètes pour vous aider à reprendre le contrôle de votre système nerveux et de vos pensées. Ensemble, nous pouvons transformer ces schémas de peur en mécanismes d'adaptation résilients.",
   },
@@ -90,7 +90,7 @@ export default function SpecializationsSection() {
           src="/images/eq.jpeg"
           alt="Intelligence Émotionnelle"
           fill
-          className="object-cover"
+          className="object-fill"
         />
         <div className="absolute inset-0 bg-black/30" />
       </div>

@@ -4,11 +4,10 @@ export interface IBooking extends Document {
   name: string;
   email: string;
   phone?: string;
-  date: string; // Format: YYYY-MM-DD
-  time: string; // Format: HH:MM
+  date: Schema.Types.ObjectId[];
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
   message?: string;
-  package?: string;
+  package?: Schema.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,16 +30,12 @@ const BookingSchema = new Schema<IBooking>(
       type: String,
       trim: true,
     },
-    date: {
-      type: String,
-      required: [true, "La date est requise"],
-      match: [/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)"],
-    },
-    time: {
-      type: String,
-      required: [true, "L'heure est requise"],
-      match: [/^\d{2}:\d{2}$/, "Format d'heure invalide (HH:MM)"],
-    },
+    date: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "BookingDate",
+      },
+    ],
     status: {
       type: String,
       enum: ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"],
@@ -51,9 +46,9 @@ const BookingSchema = new Schema<IBooking>(
       trim: true,
     },
     package: {
-      type: String,
-      enum: ["single", "pack3", "pack5", "pack10", "unlimited", "premium"],
-      trim: true,
+      type: Schema.Types.ObjectId,
+      ref: "Package",
+      required: true,
     },
   },
   {
@@ -69,25 +64,10 @@ BookingSchema.index({ date: 1, time: 1 });
 BookingSchema.index({ email: 1 });
 BookingSchema.index({ status: 1 });
 
-// Virtual for full date/time
-BookingSchema.virtual("dateTime").get(function () {
-  return `${this.date} ${this.time}`;
-});
-
 // Method to check if booking is in the past
 BookingSchema.methods.isPast = function () {
   const bookingDate = new Date(`${this.date}T${this.time}`);
   return bookingDate < new Date();
-};
-
-// Static method to find available slots
-BookingSchema.statics.findAvailableSlots = async function (date: string) {
-  const bookedSlots = await this.find({
-    date,
-    status: { $in: ["PENDING", "CONFIRMED"] },
-  }).select("time");
-
-  return bookedSlots.map((booking: any) => booking.time);
 };
 
 const Booking = models.Booking || model<IBooking>("Booking", BookingSchema);

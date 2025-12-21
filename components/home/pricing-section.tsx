@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
 import { CheckCircle, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getAllPackages } from "@/lib/actions/package.action";
+import { usePackages } from "@/hooks/use-package";
+import { useBookings } from "@/hooks/use-bookings";
+import { useRouter } from "next/navigation";
+import { useBooking } from "@/context/BookingContext";
 
 export interface Package {
   _id: string;
@@ -18,31 +20,15 @@ export interface Package {
 }
 
 export default function PricingSection() {
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { isLoading, error, packages } = usePackages();
+  const { setMaxSessions, setSelectedPackage } = useBooking();
 
-  useEffect(() => {
-    async function fetchPackages() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const res = await getAllPackages();
-        const formattedPackages = res.map((pkg) => ({
-          ...pkg,
-          _id: pkg._id.toString(),
-        }));
-        setPackages(formattedPackages);
-      } catch (error) {
-        console.error("Failed to fetch packages:", error);
-        setError("Impossible de charger les forfaits. Veuillez réessayer.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchPackages();
-  }, []);
+  const handleClick = (pkg: any) => {
+    setMaxSessions(pkg.SeanceNumber);
+    setSelectedPackage(pkg._id);
+    router.push("/booking");
+  };
   return (
     <div className="  py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,9 +43,7 @@ export default function PricingSection() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-12 w-12 text-purple-600  animate-spin mb-4" />
-            <p className="text-gray-600  text-lg">
-              Chargement des forfaits...
-            </p>
+            <p className="text-gray-600  text-lg">Chargement des forfaits...</p>
           </div>
         )}
         {/* Packages Display */}
@@ -69,6 +53,9 @@ export default function PricingSection() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
               {packages
                 .filter((pkg) => !pkg.fullWidth)
+                .filter(
+                  (pkg) => !pkg.fullWidth && pkg.name.toLowerCase() !== "free"
+                )
                 .map((pkg) => (
                   <div
                     key={pkg._id}
@@ -87,9 +74,7 @@ export default function PricingSection() {
                     </div>
                     <h3
                       className={`text-xl font-bold mb-2 ${
-                        pkg.highlighted
-                          ? "text-white"
-                          : "text-gray-800 "
+                        pkg.highlighted ? "text-white" : "text-gray-800 "
                       }`}
                     >
                       {pkg.name}
@@ -119,9 +104,7 @@ export default function PricingSection() {
                           </div>
                           <p
                             className={`text-3xl font-bold ${
-                              pkg.highlighted
-                                ? "text-white"
-                                : "text-purple-600"
+                              pkg.highlighted ? "text-white" : "text-purple-600"
                             }`}
                           >
                             {(pkg.price * (1 - pkg.discount / 100)).toFixed(2)}€
@@ -130,9 +113,7 @@ export default function PricingSection() {
                       ) : (
                         <p
                           className={`text-3xl font-bold ${
-                            pkg.highlighted
-                              ? "text-white"
-                              : "text-purple-600 "
+                            pkg.highlighted ? "text-white" : "text-purple-600 "
                           }`}
                         >
                           {pkg.price}€
@@ -142,9 +123,7 @@ export default function PricingSection() {
                     {pkg.SeanceNumber && (
                       <p
                         className={`text-sm mb-4 ${
-                          pkg.highlighted
-                            ? "text-white/80"
-                            : "text-gray-500"
+                          pkg.highlighted ? "text-white/80" : "text-gray-500"
                         }`}
                       >
                         {pkg.discount
@@ -159,29 +138,23 @@ export default function PricingSection() {
                     {pkg.duration && (
                       <p
                         className={`text-sm mb-4 ${
-                          pkg.highlighted
-                            ? "text-white/80"
-                            : "text-gray-500"
+                          pkg.highlighted ? "text-white/80" : "text-gray-500"
                         }`}
                       >
                         {pkg.duration}
                       </p>
                     )}
                     <ul className="space-y-2 mb-6 flex-grow">
-                      {pkg.features.map((feature, idx) => (
+                      {pkg.features.map((feature: any, idx: any) => (
                         <li key={idx} className="flex items-start text-sm">
                           <CheckCircle
                             className={`h-4 w-4 mr-2 mt-0.5 flex-shrink-0 ${
-                              pkg.highlighted
-                                ? "text-white"
-                                : "text-purple-600"
+                              pkg.highlighted ? "text-white" : "text-purple-600"
                             }`}
                           />
                           <span
                             className={
-                              pkg.highlighted
-                                ? "text-white"
-                                : "text-gray-600"
+                              pkg.highlighted ? "text-white" : "text-gray-600"
                             }
                           >
                             {feature}
@@ -189,8 +162,8 @@ export default function PricingSection() {
                         </li>
                       ))}
                     </ul>
-                    <Link
-                      href="/booking"
+                    <button
+                      onClick={() => handleClick(pkg)}
                       className={`block w-full text-center py-2.5 rounded-lg transition font-semibold text-sm ${
                         pkg.highlighted
                           ? "bg-white text-purple-600 hover:bg-purple-100"
@@ -198,7 +171,7 @@ export default function PricingSection() {
                       }`}
                     >
                       Réserver
-                    </Link>
+                    </button>
                   </div>
                 ))}
             </div>
@@ -244,19 +217,19 @@ export default function PricingSection() {
                       )}
                     </div>
                     <ul className="space-y-3 mb-8 flex-grow">
-                      {pkg.features.map((feature, idx) => (
+                      {pkg.features.map((feature: any, idx: any) => (
                         <li key={idx} className="flex items-start">
                           <CheckCircle className="h-5 w-5 text-white mr-2 mt-1 flex-shrink-0" />
                           <span className="text-white">{feature}</span>
                         </li>
                       ))}
                     </ul>
-                    <Link
-                      href="/booking"
+                    <button
+                      onClick={() => handleClick(pkg)}
                       className="block w-full text-center bg-white text-purple-600 py-3 rounded-lg font-semibold transition hover:bg-purple-100"
                     >
                       Réserver
-                    </Link>
+                    </button>
                   </div>
                 ))}
             </div>
