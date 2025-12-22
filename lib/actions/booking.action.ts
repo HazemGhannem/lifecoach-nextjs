@@ -471,7 +471,7 @@ export async function sendOwnerBookingNotificationEmail({
     );
 
     await sendEmail({
-      to: process.env.NEXT_PUBLIC_EMAIL_USER!,
+      to: process.env.NEXT_PUBLIC_SMTP_USER!,
       subject: "📢 Nouvelle réservation",
       html: emailHtml,
     });

@@ -12,22 +12,23 @@ export async function sendEmail({
   html: string;
 }) {
   const transporter = nodemailer.createTransport({
-    host: process.env.NEXT_PUBLIC_EMAIL_USER,
-    port: Number(process.env.EMAIL_PORT),
-    secure: true,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE,
     auth: {
-      user: process.env.NEXT_PUBLIC_EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user: process.env.NEXT_PUBLIC_SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
 
   try {
     await transporter.sendMail({
-      from: `"Léopoldine Almeida" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
+      from: `"Léopoldine Almeida" <${process.env.NEXT_PUBLIC_SMTP_USER}>`,
       to,
       subject,
       html,
     });
+    ;
     return { success: true };
   } catch (err) {
     console.error("Email error:", err);

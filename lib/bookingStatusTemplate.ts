@@ -7,15 +7,15 @@ export async function bookingStatusEmailTemplate(
   bookingDate: string,
   bookingTime: string
 ) {
-  const transporter = nodemailer.createTransport({
-    host: process.env.NEXT_PUBLIC_EMAIL_USER,
-    port: Number(process.env.EMAIL_PORT),
-    secure: true,
-    auth: {
-      user: process.env.NEXT_PUBLIC_EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST!,
+  port: Number(process.env.SMTP_PORT),
+  secure: process.env.SMTP_SECURE,
+  auth: {
+    user: process.env.NEXT_PUBLIC_SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
   const statusMessages: Record<
     "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW",
     { title: string; message: string }
@@ -84,7 +84,7 @@ Cordialement
   `;
   try {
     await transporter.sendMail({
-      from: `"Léopoldine Almeida" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
+      from: `"Léopoldine Almeida" <${process.env.NEXT_PUBLIC_SMTP_USER}>`,
       to,
       subject,
       html,

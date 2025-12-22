@@ -38,7 +38,7 @@ export default function ContactForm() {
         />
       );
       const emailSendToOwner = await sendEmail({
-        to: `${process.env.NEXT_PUBLIC_EMAIL_USER!}`,
+        to: `${process.env.NEXT_PUBLIC_SMTP_USER!}`,
         subject: "New Contact Message",
         html: await ownerHtml,
       });
