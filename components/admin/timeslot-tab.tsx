@@ -240,7 +240,7 @@ export default function TimeSlotsAdmin() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full md:w-1/2 border-2 border-purple-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full md:w-1/2 border-2 border-purple-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800 appearance-none"
             />
           </div>
 
@@ -476,7 +476,7 @@ export default function TimeSlotsAdmin() {
                         <>
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium text-sm">
+                            <span className="font-medium text-sm text-gray-800">
                               {slot.startTime} - {slot.endTime}
                             </span>
                             <span

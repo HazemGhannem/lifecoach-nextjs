@@ -145,7 +145,7 @@ export default function AdminDashboard() {
   const stats = [
     {
       name: "Total Forfaits",
-      value: packages.length,
+      value: packages.length-1,
       icon: Package,
       color: "bg-purple-500",
     },
