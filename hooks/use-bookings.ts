@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   createBooking,
-  getBookingsByEmail,
+  getBookings,
   cancelBooking as cancelBookingAction,
   getBookedSlots,
   getBookingsByMonth,
@@ -76,16 +76,14 @@ export const useBookings = (
   }, [currentMonth, currentYear]);
 
   useEffect(() => {
-    if (userEmail) {
-      fetchBookings();
-    }
-  }, [userEmail]);
+    fetchBookings();
+  }, []);
 
   const fetchAllBookings = async (year: number, month: number) => {
     try {
       setLoading(true);
       const result = await getBookingsByMonth(year, month);
-      console.log(result.bookings, "...........", year, month);
+
       if (result.success && result.bookings) {
         setAllBookings(result.bookings);
       }
@@ -97,11 +95,9 @@ export const useBookings = (
   };
 
   const fetchBookings = async () => {
-    if (!userEmail) return;
-
     try {
       setLoading(true);
-      const result = await getBookingsByEmail(userEmail);
+      const result = await getBookings();
       if (result.success && result.bookings) {
         setBookings(result.bookings);
       } else {

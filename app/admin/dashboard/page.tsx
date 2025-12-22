@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Package, Calendar, Clock, CheckCircle } from "lucide-react";
-import { PackageType,  BookingStatus } from "@/types";
+import { PackageType, BookingStatus } from "@/types";
 import PackageModal from "@/components/admin/package-modal";
 import BookingsTable from "@/components/admin/booking-tab";
 import PackagesTable from "@/components/admin/package-tab";
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
   } = usePackages();
 
   const { allBookings, setAllBookings, bookings } = useBookings();
-  console.log(allBookings)
+  console.log(bookings);
 
   const [formData, setFormData] = useState<Partial<PackageInput>>({
     name: "",
@@ -216,14 +216,14 @@ export default function AdminDashboard() {
         {/* Bookings Tab */}
         {activeTab === "bookings" && (
           <BookingsTable
-            bookings={allBookings}
+            bookings={bookings}
             onStatusChange={handleUpdateBookingStatus}
             type={activeTab}
           />
         )}
         {activeTab === "freeBookings" && (
           <BookingsTable
-            bookings={allBookings}
+            bookings={bookings}
             onStatusChange={handleUpdateBookingStatus}
             type={activeTab}
           />

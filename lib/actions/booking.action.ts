@@ -60,6 +60,7 @@ export async function createBooking(data: CreateBookingParams) {
         }
       }
     }
+
     // Group time slots by date
     const dateGroups: { [key: string]: string[] } = {};
     timeSlots.forEach((slot) => {
@@ -69,11 +70,11 @@ export async function createBooking(data: CreateBookingParams) {
       dateGroups[slot.date].push(slot.time);
     });
 
-    // Create BookingTime and BookingDate documents
+    // Create NEW BookingTime and BookingDate documents for this booking
     const dateIds = [];
 
     for (const [date, times] of Object.entries(dateGroups)) {
-      // Create BookingTime documents for each time
+      // Create NEW BookingTime documents for each time (always new, never reuse)
       const timeIds = [];
       for (const time of times) {
         const bookingTime = await BookingTime.create({
@@ -83,25 +84,18 @@ export async function createBooking(data: CreateBookingParams) {
         timeIds.push(bookingTime._id);
       }
 
-      // Check if BookingDate exists for this date
-      let bookingDate = await BookingDate.findOne({ date });
-
-      if (bookingDate) {
-        // Add new times to existing date
-        bookingDate.times.push(...timeIds);
-        await bookingDate.save();
-      } else {
-        // Create new BookingDate
-        bookingDate = await BookingDate.create({
-          date,
-          times: timeIds,
-        });
-      }
+      // Always create a NEW BookingDate for this booking (never reuse existing)
+      const bookingDate = await BookingDate.create({
+        date,
+        times: timeIds,
+      });
 
       dateIds.push(bookingDate._id);
     }
+
     const freePackage = await Package.findOne({ name: "free" });
-    // Check if this email already has a "single" booking
+
+    // Check if this email already has a "free" booking
     if (data.packageId == freePackage._id.toString()) {
       const existing = await Booking.findOne({
         email: data.email,
@@ -182,6 +176,34 @@ export async function getBookingsByEmail(email: string) {
       email,
       status: { $in: ["PENDING", "CONFIRMED"] },
     })
+      .populate("package")
+      .populate({
+        path: "date",
+        populate: {
+          path: "times",
+        },
+      })
+      .sort({ date: 1, time: 1 })
+      .lean();
+
+    return {
+      success: true,
+      bookings: JSON.parse(JSON.stringify(bookings)),
+    };
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    return {
+      success: false,
+      error: "Échec de la récupération des réservations",
+    };
+  }
+}
+
+export async function getBookings() {
+  try {
+    await connectDB();
+
+    const bookings = await Booking.find()
       .populate("package")
       .populate({
         path: "date",
