@@ -24,7 +24,7 @@ export default function BookingsTable({
     // For other types, show all
     return true;
   });
-  console.log(filteredBookings,'//****//');
+  console.log(filteredBookings, "//****//");
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -73,11 +73,38 @@ export default function BookingsTable({
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900 dark:text-white">
-                    {new Date(booking.date).toLocaleDateString("fr-FR")}
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {booking.time}
+                  <div className="space-y-2">
+                    {booking.date && booking.date.length > 0 ? (
+                      booking.date.map((dateObj: any, dateIdx: number) => (
+                        <div key={`${booking._id}-date-${dateIdx}`}>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {new Date(dateObj.date).toLocaleDateString("fr-FR")}
+                          </div>
+                          {dateObj.times && dateObj.times.length > 0 ? (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {dateObj.times.map(
+                                (timeObj: any, timeIdx: number) => (
+                                  <span
+                                    key={`${booking._id}-time-${dateIdx}-${timeIdx}`}
+                                    className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs px-2 py-1 rounded"
+                                  >
+                                    {timeObj.time}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              Aucun créneau
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        -
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
