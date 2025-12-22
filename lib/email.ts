@@ -12,9 +12,9 @@ export async function sendEmail({
   html: string;
 }) {
   const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
+    host: process.env.NEXT_PUBLIC_EMAIL_USER,
     port: Number(process.env.EMAIL_PORT),
-    secure: false,
+    secure: true,
     auth: {
       user: process.env.NEXT_PUBLIC_EMAIL_USER,
       pass: process.env.EMAIL_PASS,
