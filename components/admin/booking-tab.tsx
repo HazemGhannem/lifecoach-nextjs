@@ -13,6 +13,18 @@ export default function BookingsTable({
   onStatusChange,
   type,
 }: BookingsTableProps) {
+  const filteredBookings = bookings.filter((booking) => {
+    if (type === "freeBookings") {
+      // Show only FREE bookings
+      return booking.package?.name.toLowerCase() === "free";
+    } else if (type === "bookings") {
+      // Show only PAID bookings (NOT free)
+      return booking.package?.name.toLowerCase() !== "free";
+    }
+    // For other types, show all
+    return true;
+  });
+  console.log(filteredBookings,'//****//');
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -42,64 +54,58 @@ export default function BookingsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {bookings
-              .filter(
-                (booking) =>
-                  type === "freeBookings" &&
-                  booking.package?.name.toLowerCase() === "free"
-              )
-              .map((booking) => (
-                <tr
-                  key={booking._id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {booking.name}
-                    </div>
+            {filteredBookings.map((booking) => (
+              <tr
+                key={booking._id}
+                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {booking.name}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {booking.email}
+                  </div>
+                  {booking.phone && (
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {booking.email}
+                      {booking.phone}
                     </div>
-                    {booking.phone && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {booking.phone}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {new Date(booking.date).toLocaleDateString("fr-FR")}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {booking.time}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {booking.package?.name || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={booking.status} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    <select
-                      value={booking.status}
-                      onChange={(e) =>
-                        onStatusChange(
-                          booking._id,
-                          e.target.value as BookingStatus
-                        )
-                      }
-                      className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="PENDING">En attente</option>
-                      <option value="CONFIRMED">Confirmé</option>
-                      <option value="COMPLETED">Terminé</option>
-                      <option value="CANCELLED">Annulé</option>
-                      <option value="NO_SHOW">Absent</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900 dark:text-white">
+                    {new Date(booking.date).toLocaleDateString("fr-FR")}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {booking.time}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  {booking.package?.name || "-"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <StatusBadge status={booking.status} />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <select
+                    value={booking.status}
+                    onChange={(e) =>
+                      onStatusChange(
+                        booking._id,
+                        e.target.value as BookingStatus
+                      )
+                    }
+                    className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="PENDING">En attente</option>
+                    <option value="CONFIRMED">Confirmé</option>
+                    <option value="COMPLETED">Terminé</option>
+                    <option value="CANCELLED">Annulé</option>
+                    <option value="NO_SHOW">Absent</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

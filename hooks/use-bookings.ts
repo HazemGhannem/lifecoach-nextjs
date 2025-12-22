@@ -85,6 +85,7 @@ export const useBookings = (
     try {
       setLoading(true);
       const result = await getBookingsByMonth(year, month);
+      console.log(result.bookings, "...........", year, month);
       if (result.success && result.bookings) {
         setAllBookings(result.bookings);
       }

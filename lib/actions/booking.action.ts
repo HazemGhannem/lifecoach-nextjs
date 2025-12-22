@@ -237,7 +237,6 @@ export async function getBookingsByMonth(year: number, month: number) {
         path: "package",
         model: "Package",
       });
-
     // Filter and flatten to get all date-time combinations for this month
     const monthBookings: any[] = [];
 
@@ -273,10 +272,9 @@ export async function getBookingsByMonth(year: number, month: number) {
         }
       }
     }
-
     return {
       success: true,
-      bookings: JSON.parse(JSON.stringify(monthBookings)),
+      bookings: JSON.parse(JSON.stringify(bookings)),
     };
   } catch (error) {
     console.error("Error fetching bookings by month:", error);

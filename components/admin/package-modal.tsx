@@ -252,7 +252,7 @@ export default function PackageModal({
                 checked={!!formData.highlighted}
                 onChange={() => toggleBooleanField("highlighted")}
               />
-              <label className="text-white">Highlighted</label>
+              <label className="">Highlighted</label>
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -260,7 +260,7 @@ export default function PackageModal({
                 checked={!!formData.fullWidth}
                 onChange={() => toggleBooleanField("fullWidth")}
               />
-              <label className="text-white">Full Width</label>
+              <label className="">Full Width</label>
             </div>
           </div>
         </div>

@@ -42,6 +42,7 @@ export default function AdminDashboard() {
   } = usePackages();
 
   const { allBookings, setAllBookings, bookings } = useBookings();
+  console.log(allBookings)
 
   const [formData, setFormData] = useState<Partial<PackageInput>>({
     name: "",
