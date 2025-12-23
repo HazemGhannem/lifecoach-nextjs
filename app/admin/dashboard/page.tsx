@@ -42,7 +42,6 @@ export default function AdminDashboard() {
   } = usePackages();
 
   const { allBookings, setAllBookings, bookings } = useBookings();
-  console.log(bookings);
 
   const [formData, setFormData] = useState<Partial<PackageInput>>({
     name: "",
@@ -145,25 +144,25 @@ export default function AdminDashboard() {
   const stats = [
     {
       name: "Total Forfaits",
-      value: packages.length-1,
+      value: packages.length - 1,
       icon: Package,
       color: "bg-purple-500",
     },
     {
       name: "Total Réservations",
-      value: allBookings.length,
+      value: bookings.length,
       icon: Calendar,
       color: "bg-pink-500",
     },
     {
       name: "En Attente",
-      value: allBookings.filter((b) => b.status === "PENDING").length,
+      value: bookings.filter((b) => b.status === "PENDING").length,
       icon: Clock,
       color: "bg-yellow-500",
     },
     {
       name: "Confirmées",
-      value: allBookings.filter((b) => b.status === "CONFIRMED").length,
+      value: bookings.filter((b) => b.status === "CONFIRMED").length,
       icon: CheckCircle,
       color: "bg-green-500",
     },

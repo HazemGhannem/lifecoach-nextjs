@@ -10,6 +10,7 @@ import {
 import { Plus, Trash2, Edit2, Calendar, Clock } from "lucide-react";
 import { Toast } from "../Toast";
 import ConfirmModal from "./ConfirmModal";
+import CalendarIcon from "../CalendarIcon";
 
 // Predefined time slots to choose from
 const PRESET_TIME_SLOTS = [
@@ -244,21 +245,7 @@ export default function TimeSlotsAdmin() {
               style={{ MozAppearance: "textfield" }} // Firefox
             />
             {/* Custom black calendar icon */}
-            <svg
-              className="w-5 h-5 text-black absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              viewBox="0 0 128 128"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M95.4,6c2.7,0,4.9,2.2,4.9,4.9v15.4c0,2.7-2.2,4.9-4.9,4.9c-2.7,0-4.9-2.2-4.9-4.9V10.9C90.5,8.2,92.7,6,95.4,6" />
-              <polygon points="64.3,57.9 72.4,57.9 72.4,103.1 63.3,103.1 63.3,68.2 55.6,74.4 51.1,68.5 " />
-              <path
-                d="M105.8,20.2v6.2c0,5.7-4.7,10.4-10.4,10.4c-5.7,0-10.4-4.7-10.4-10.4v-6.2H44.4v6.2c0,5.7-4.7,10.4-10.4,10.4
-      c-5.8,0-10.4-4.7-10.4-10.4v-6.2H8.3v25.8V122h112.8V46.1V20.2H105.8z M115,93.6l-22.4,22.1H14.4V46.1H115V93.6z"
-              />
-              <path d="M34,6c2.7,0,4.9,2.2,4.9,4.9v15.4c0,2.7-2.2,4.9-4.9,4.9c-2.7,0-4.9-2.2-4.9-4.9V10.9C29.1,8.2,31.3,6,34,6" />
-              <path d="M95.4,6c2.7,0,4.9,2.2,4.9,4.9v15.4c0,2.7-2.2,4.9-4.9,4.9c-2.7,0-4.9-2.2-4.9-4.9V10.9C90.5,8.2,92.7,6,95.4,6" />
-            </svg>
+            <CalendarIcon />
             <style jsx>{`
               /* Hide default calendar icon in Chrome, Safari, Edge */
               input[type="date"]::-webkit-calendar-picker-indicator {
