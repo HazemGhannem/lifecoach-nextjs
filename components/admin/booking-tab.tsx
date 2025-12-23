@@ -9,7 +9,7 @@ interface BookingsTableProps {
   type: "packages" | "bookings" | "freeBookings" | "timeslots";
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 
 export default function BookingsTable({
   bookings,

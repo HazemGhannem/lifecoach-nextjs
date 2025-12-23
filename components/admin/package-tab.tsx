@@ -72,14 +72,8 @@ export default function PackagesTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-<<<<<<< HEAD
             {paginatedPackages.length > 0 ? (
               paginatedPackages.map((pkg) => (
-=======
-            {packages
-              .filter((pkg) => pkg.name !== "free")
-              .map((pkg) => (
->>>>>>> b76ee936d669db22b2ec289588439841d06d2926
                 <tr
                   key={pkg._id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -121,7 +115,6 @@ export default function PackagesTable({
                     </button>
                   </td>
                 </tr>
-<<<<<<< HEAD
               ))
             ) : (
               <tr>
@@ -133,9 +126,6 @@ export default function PackagesTable({
                 </td>
               </tr>
             )}
-=======
-              ))}
->>>>>>> b76ee936d669db22b2ec289588439841d06d2926
           </tbody>
         </table>
       </div>

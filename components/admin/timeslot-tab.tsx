@@ -523,27 +523,6 @@ export default function TimeSlotsAdmin() {
                             {slot.isAvailable ? "✓" : "✗"}
                           </span>
                         </div>
-<<<<<<< HEAD
-=======
-                      ) : (
-                        /* VIEW MODE */
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium text-sm text-gray-800">
-                              {slot.startTime} - {slot.endTime}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs ${
-                                slot.isAvailable
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {slot.isAvailable ? "✓" : "✗"}
-                            </span>
-                          </div>
->>>>>>> b76ee936d669db22b2ec289588439841d06d2926
 
                         <div className="flex gap-1">
                           <button
