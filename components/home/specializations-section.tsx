@@ -85,7 +85,7 @@ export default function SpecializationsSection() {
           </div>
         ))}
       </div>
-      <div className="relative w-full h-72 md:h-96 mt-16 rounded-2xl overflow-hidden shadow-lg">
+      <div className="relative w-3/4 h-72 md:h-96 mt-16 rounded-2xl overflow-hidden shadow-lg mx-auto">
         <Image
           src="/images/eq.jpeg"
           alt="Intelligence Émotionnelle"

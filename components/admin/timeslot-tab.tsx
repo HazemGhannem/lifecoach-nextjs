@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Toast } from "../Toast";
 import ConfirmModal from "./ConfirmModal";
+import CalendarIcon from "../CalendarIcon";
 
 // Predefined time slots to choose from
 const PRESET_TIME_SLOTS = [
@@ -260,7 +261,7 @@ export default function TimeSlotsAdmin() {
 
         <div className="space-y-4">
           {/* Date Selection */}
-          <div>
+          <div className="relative w-full md:w-1/2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               1. Sélectionnez la date
             </label>
@@ -268,8 +269,18 @@ export default function TimeSlotsAdmin() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full md:w-1/2 border-2 border-purple-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full border-2 border-purple-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
+              style={{ MozAppearance: "textfield" }} // Firefox
             />
+            {/* Custom black calendar icon */}
+            <CalendarIcon />
+            <style jsx>{`
+              /* Hide default calendar icon in Chrome, Safari, Edge */
+              input[type="date"]::-webkit-calendar-picker-indicator {
+                display: none;
+                -webkit-appearance: none;
+              }
+            `}</style>
           </div>
 
           {/* Time Slots Selection */}
@@ -512,6 +523,27 @@ export default function TimeSlotsAdmin() {
                             {slot.isAvailable ? "✓" : "✗"}
                           </span>
                         </div>
+<<<<<<< HEAD
+=======
+                      ) : (
+                        /* VIEW MODE */
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-purple-600" />
+                            <span className="font-medium text-sm text-gray-800">
+                              {slot.startTime} - {slot.endTime}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs ${
+                                slot.isAvailable
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {slot.isAvailable ? "✓" : "✗"}
+                            </span>
+                          </div>
+>>>>>>> b76ee936d669db22b2ec289588439841d06d2926
 
                         <div className="flex gap-1">
                           <button
