@@ -243,12 +243,16 @@ export async function getBookingsByMonth(year: number, month: number) {
     const endDate = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
     // Find all bookings for the month
-    const bookings = await Booking.find({
-      // Get bookings that were created in this month or have dates in this month
-    })
+    const bookings = await Booking.find()
       .populate({
         path: "date",
         model: "BookingDate",
+        match: {
+          date: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+        },
         populate: {
           path: "times",
           model: "BookingTime",
@@ -259,13 +263,18 @@ export async function getBookingsByMonth(year: number, month: number) {
         path: "package",
         model: "Package",
       });
+
     // Filter and flatten to get all date-time combinations for this month
     const monthBookings: any[] = [];
 
     for (const booking of bookings) {
-      if (booking.date && Array.isArray(booking.date)) {
+      if (
+        booking.date &&
+        Array.isArray(booking.date) &&
+        booking.date.length > 0
+      ) {
         for (const bookingDate of booking.date) {
-          // Check if date falls within the month range
+          // Double check date is within range
           if (bookingDate.date >= startDate && bookingDate.date <= endDate) {
             if (bookingDate.times && bookingDate.times.length > 0) {
               for (const bookingTime of bookingDate.times) {
@@ -294,9 +303,10 @@ export async function getBookingsByMonth(year: number, month: number) {
         }
       }
     }
+
     return {
       success: true,
-      bookings: JSON.parse(JSON.stringify(bookings)),
+      bookings: JSON.parse(JSON.stringify(monthBookings)),
     };
   } catch (error) {
     console.error("Error fetching bookings by month:", error);
