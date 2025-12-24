@@ -66,8 +66,8 @@ export default function Navigation() {
               src="/images/logo.png"
               alt="logo"
               className="object-contain"
-              width={40}
-              height={40}
+              width={60}
+              height={60}
             />
             <span className="ml-2 text-2xl font-bold text-gray-800 dark:text-white">
               Léopoldine Almeida

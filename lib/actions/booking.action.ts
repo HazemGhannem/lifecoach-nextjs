@@ -482,12 +482,14 @@ export async function sendOwnerBookingNotificationEmail({
   slotsText,
   packageName,
   price,
+  nbScence,
 }: {
   clientName: string;
   clientEmail: string;
   slotsText: string;
   packageName: string;
   price: number;
+  nbScence: number;
 }) {
   try {
     const emailHtml = await render(
@@ -497,6 +499,7 @@ export async function sendOwnerBookingNotificationEmail({
         slotsText,
         packageName,
         price,
+        nbScence,
       })
     );
 

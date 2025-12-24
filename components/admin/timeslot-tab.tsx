@@ -269,18 +269,10 @@ export default function TimeSlotsAdmin() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full border-2 border-purple-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
-              style={{ MozAppearance: "textfield" }} // Firefox
+              className="border-2 border-purple-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
             />
             {/* Custom black calendar icon */}
-            <CalendarIcon />
-            <style jsx>{`
-              /* Hide default calendar icon in Chrome, Safari, Edge */
-              input[type="date"]::-webkit-calendar-picker-indicator {
-                display: none;
-                -webkit-appearance: none;
-              }
-            `}</style>
+            
           </div>
 
           {/* Time Slots Selection */}

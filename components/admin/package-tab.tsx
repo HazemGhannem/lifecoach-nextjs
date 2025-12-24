@@ -37,7 +37,7 @@ export default function PackagesTable({
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Gestion des Forfaits ({packages.length})
+          Gestion des Forfaits ({packages.length - 1})
         </h2>
         <button
           onClick={onCreate}
@@ -72,50 +72,55 @@ export default function PackagesTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {paginatedPackages.length > 0 ? (
-              paginatedPackages.map((pkg) => (
-                <tr
-                  key={pkg._id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {pkg.name}
-                    </div>
-                    {pkg.badge && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                        {pkg.badge}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {pkg.price ? `${pkg.price}€` : "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {pkg.SeanceNumber || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {pkg.duration || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {pkg.discount ? `${pkg.discount}%` : "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => onEdit(pkg)}
-                      className="text-purple-600 hover:text-purple-900 dark:text-purple-400 mr-3"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(pkg._id)}
-                      className="text-red-600 hover:text-red-900 dark:text-red-400"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))
+            {paginatedPackages.filter((pkg) => pkg.name !== "free").length >
+            0 ? (
+              paginatedPackages
+                .filter((pkg) => pkg.name !== "free")
+                .map((pkg) => (
+                  <tr
+                    key={pkg._id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {pkg.name}
+                      </div>
+                      {pkg.badge && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          {pkg.badge}
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {pkg.price ? `${pkg.price}€` : "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {pkg.SeanceNumber || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {pkg.duration || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {pkg.discount ? `${pkg.discount}%` : "-"}
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => onEdit(pkg)}
+                        className="text-purple-600 hover:text-purple-900 dark:text-purple-400 mr-3"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(pkg._id)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
             ) : (
               <tr>
                 <td

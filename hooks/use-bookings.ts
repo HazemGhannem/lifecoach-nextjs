@@ -241,6 +241,7 @@ export const useBookings = (
           .map((slot) => `${slot.date} à ${slot.time}`)
           .join("<br/>");
         let finalPrice = result.booking.package.price;
+        let nbScence = result.booking.package.SeanceNumber;
         if (result.booking.package.discount) {
           finalPrice =
             (result.booking.package.price * result.booking.package.discount) /
@@ -260,6 +261,7 @@ export const useBookings = (
           slotsText,
           packageName: result.booking.package.name,
           price: finalPrice,
+          nbScence,
         });
       } catch (emailError) {
         console.error("Error sending email:", emailError);
