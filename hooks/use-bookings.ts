@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   createBooking,
-  getBookingsByEmail,
+  getBookings,
   cancelBooking as cancelBookingAction,
   getBookedSlots,
   getBookingsByMonth,
@@ -76,15 +76,14 @@ export const useBookings = (
   }, [currentMonth, currentYear]);
 
   useEffect(() => {
-    if (userEmail) {
-      fetchBookings();
-    }
-  }, [userEmail]);
+    fetchBookings();
+  }, []);
 
   const fetchAllBookings = async (year: number, month: number) => {
     try {
       setLoading(true);
       const result = await getBookingsByMonth(year, month);
+
       if (result.success && result.bookings) {
         setAllBookings(result.bookings);
       }
@@ -96,11 +95,9 @@ export const useBookings = (
   };
 
   const fetchBookings = async () => {
-    if (!userEmail) return;
-
     try {
       setLoading(true);
-      const result = await getBookingsByEmail(userEmail);
+      const result = await getBookings();
       if (result.success && result.bookings) {
         setBookings(result.bookings);
       } else {
@@ -244,6 +241,7 @@ export const useBookings = (
           .map((slot) => `${slot.date} à ${slot.time}`)
           .join("<br/>");
         let finalPrice = result.booking.package.price;
+        let nbScence = result.booking.package.SeanceNumber;
         if (result.booking.package.discount) {
           finalPrice =
             (result.booking.package.price * result.booking.package.discount) /
@@ -263,6 +261,7 @@ export const useBookings = (
           slotsText,
           packageName: result.booking.package.name,
           price: finalPrice,
+          nbScence,
         });
       } catch (emailError) {
         console.error("Error sending email:", emailError);

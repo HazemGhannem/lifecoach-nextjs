@@ -8,6 +8,7 @@ interface OwnerBookingEmailProps {
   slotsText: string;
   packageName: string;
   price: number;
+  nbScence: number;
 }
 
 export function OwnerBookingEmail({
@@ -16,6 +17,7 @@ export function OwnerBookingEmail({
   slotsText,
   packageName,
   price,
+  nbScence,
 }: OwnerBookingEmailProps) {
   return (
     <BaseEmail>
@@ -34,11 +36,19 @@ export function OwnerBookingEmail({
         <Text>
           <strong>Créneaux :</strong>
           <br />
-          {slotsText}
+          {slotsText.split("<br/>").map((slot, index) => (
+            <React.Fragment key={index}>
+              {slot}
+              <br />
+            </React.Fragment>
+          ))}
         </Text>
 
         <Text>
           <strong>Forfait :</strong> {packageName}
+        </Text>
+        <Text>
+          <strong>Nombre de séances :</strong> {nbScence}
         </Text>
         <Text>
           <strong>Prix :</strong> {price}€

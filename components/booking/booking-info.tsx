@@ -1,4 +1,5 @@
-import { Mail, Phone } from "lucide-react";
+import { Mail } from "lucide-react";
+import Image from "next/image";
 
 export default function BookingInfo() {
   return (
@@ -25,7 +26,14 @@ export default function BookingInfo() {
             </a>
           </div>
           <div className="flex items-center gap-2">
-            <Phone className="h-5 w-5 text-purple-600" />
+            <Image
+              src="/images/whatsapp.png"
+              alt="whatsapp"
+              height={20}
+              width={20}
+              className="object-cover object-center"
+              priority
+            />
             <a
               className="text-sm text-gray-700 hover:text-purple-600"
               href="tel:+33123456789"

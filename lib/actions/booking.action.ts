@@ -60,6 +60,7 @@ export async function createBooking(data: CreateBookingParams) {
         }
       }
     }
+
     // Group time slots by date
     const dateGroups: { [key: string]: string[] } = {};
     timeSlots.forEach((slot) => {
@@ -69,11 +70,11 @@ export async function createBooking(data: CreateBookingParams) {
       dateGroups[slot.date].push(slot.time);
     });
 
-    // Create BookingTime and BookingDate documents
+    // Create NEW BookingTime and BookingDate documents for this booking
     const dateIds = [];
 
     for (const [date, times] of Object.entries(dateGroups)) {
-      // Create BookingTime documents for each time
+      // Create NEW BookingTime documents for each time (always new, never reuse)
       const timeIds = [];
       for (const time of times) {
         const bookingTime = await BookingTime.create({
@@ -83,25 +84,18 @@ export async function createBooking(data: CreateBookingParams) {
         timeIds.push(bookingTime._id);
       }
 
-      // Check if BookingDate exists for this date
-      let bookingDate = await BookingDate.findOne({ date });
-
-      if (bookingDate) {
-        // Add new times to existing date
-        bookingDate.times.push(...timeIds);
-        await bookingDate.save();
-      } else {
-        // Create new BookingDate
-        bookingDate = await BookingDate.create({
-          date,
-          times: timeIds,
-        });
-      }
+      // Always create a NEW BookingDate for this booking (never reuse existing)
+      const bookingDate = await BookingDate.create({
+        date,
+        times: timeIds,
+      });
 
       dateIds.push(bookingDate._id);
     }
+
     const freePackage = await Package.findOne({ name: "free" });
-    // Check if this email already has a "single" booking
+
+    // Check if this email already has a "free" booking
     if (data.packageId == freePackage._id.toString()) {
       const existing = await Booking.findOne({
         email: data.email,
@@ -204,6 +198,34 @@ export async function getBookingsByEmail(email: string) {
     };
   }
 }
+
+export async function getBookings() {
+  try {
+    await connectDB();
+
+    const bookings = await Booking.find()
+      .populate("package")
+      .populate({
+        path: "date",
+        populate: {
+          path: "times",
+        },
+      })
+      .sort({ date: 1, time: 1 })
+      .lean();
+
+    return {
+      success: true,
+      bookings: JSON.parse(JSON.stringify(bookings)),
+    };
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    return {
+      success: false,
+      error: "Échec de la récupération des réservations",
+    };
+  }
+}
 // Get bookings
 export async function getBookingsByMonth(year: number, month: number) {
   try {
@@ -221,12 +243,16 @@ export async function getBookingsByMonth(year: number, month: number) {
     const endDate = `${year}-${monthStr}-${String(lastDay).padStart(2, "0")}`;
 
     // Find all bookings for the month
-    const bookings = await Booking.find({
-      // Get bookings that were created in this month or have dates in this month
-    })
+    const bookings = await Booking.find()
       .populate({
         path: "date",
         model: "BookingDate",
+        match: {
+          date: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+        },
         populate: {
           path: "times",
           model: "BookingTime",
@@ -242,9 +268,13 @@ export async function getBookingsByMonth(year: number, month: number) {
     const monthBookings: any[] = [];
 
     for (const booking of bookings) {
-      if (booking.date && Array.isArray(booking.date)) {
+      if (
+        booking.date &&
+        Array.isArray(booking.date) &&
+        booking.date.length > 0
+      ) {
         for (const bookingDate of booking.date) {
-          // Check if date falls within the month range
+          // Double check date is within range
           if (bookingDate.date >= startDate && bookingDate.date <= endDate) {
             if (bookingDate.times && bookingDate.times.length > 0) {
               for (const bookingTime of bookingDate.times) {
@@ -452,12 +482,14 @@ export async function sendOwnerBookingNotificationEmail({
   slotsText,
   packageName,
   price,
+  nbScence,
 }: {
   clientName: string;
   clientEmail: string;
   slotsText: string;
   packageName: string;
   price: number;
+  nbScence: number;
 }) {
   try {
     const emailHtml = await render(
@@ -467,6 +499,7 @@ export async function sendOwnerBookingNotificationEmail({
         slotsText,
         packageName,
         price,
+        nbScence,
       })
     );
 
