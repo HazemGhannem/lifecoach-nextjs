@@ -67,9 +67,9 @@ export default function BookingModal({
   };
 
   const selectedPackageData = packages.find((p) => p._id === selectedPackage);
-  const amount = selectedPackageData
+   const amount = selectedPackageData
     ? selectedPackageData.discount
-      ? selectedPackageData.price +
+      ? selectedPackageData.price -
         (selectedPackageData.price * selectedPackageData.discount) / 100
       : selectedPackageData.price
     : 0;
