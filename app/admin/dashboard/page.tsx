@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Package, Calendar, Clock, CheckCircle } from "lucide-react";
-import { PackageType,  BookingStatus } from "@/types";
+import { PackageType, BookingStatus } from "@/types";
 import PackageModal from "@/components/admin/package-modal";
 import BookingsTable from "@/components/admin/booking-tab";
 import PackagesTable from "@/components/admin/package-tab";
@@ -42,7 +42,6 @@ export default function AdminDashboard() {
   } = usePackages();
 
   const { allBookings, setAllBookings, bookings } = useBookings();
-  console.log(allBookings)
 
   const [formData, setFormData] = useState<Partial<PackageInput>>({
     name: "",
@@ -145,25 +144,25 @@ export default function AdminDashboard() {
   const stats = [
     {
       name: "Total Forfaits",
-      value: packages.length,
+      value: packages.length - 1,
       icon: Package,
       color: "bg-purple-500",
     },
     {
       name: "Total Réservations",
-      value: allBookings.length,
+      value: bookings.length,
       icon: Calendar,
       color: "bg-pink-500",
     },
     {
       name: "En Attente",
-      value: allBookings.filter((b) => b.status === "PENDING").length,
+      value: bookings.filter((b) => b.status === "PENDING").length,
       icon: Clock,
       color: "bg-yellow-500",
     },
     {
       name: "Confirmées",
-      value: allBookings.filter((b) => b.status === "CONFIRMED").length,
+      value: bookings.filter((b) => b.status === "CONFIRMED").length,
       icon: CheckCircle,
       color: "bg-green-500",
     },
@@ -216,14 +215,14 @@ export default function AdminDashboard() {
         {/* Bookings Tab */}
         {activeTab === "bookings" && (
           <BookingsTable
-            bookings={allBookings}
+            bookings={bookings}
             onStatusChange={handleUpdateBookingStatus}
             type={activeTab}
           />
         )}
         {activeTab === "freeBookings" && (
           <BookingsTable
-            bookings={allBookings}
+            bookings={bookings}
             onStatusChange={handleUpdateBookingStatus}
             type={activeTab}
           />

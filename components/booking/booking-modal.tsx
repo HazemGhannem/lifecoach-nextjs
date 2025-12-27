@@ -67,7 +67,7 @@ export default function BookingModal({
   };
 
   const selectedPackageData = packages.find((p) => p._id === selectedPackage);
-  const amount = selectedPackageData
+   const amount = selectedPackageData
     ? selectedPackageData.discount
       ? selectedPackageData.price -
         (selectedPackageData.price * selectedPackageData.discount) / 100
@@ -315,19 +315,22 @@ export default function BookingModal({
             {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Téléphone
+                Téléphone <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Phone className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  type="tel"
+                  type="text"
                   disabled={loading}
                   value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\+?\d*$/.test(value)) {
+                      setFormData({ ...formData, phone: value });
+                    }
+                  }}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   placeholder="+33 6 12 34 56 78"
                 />
@@ -368,6 +371,7 @@ export default function BookingModal({
                       isProcessing ||
                       !formData.name ||
                       !formData.email ||
+                      !formData.phone ||
                       !selectedPackageData
                     }
                     // Create order by calling backend
@@ -414,6 +418,7 @@ export default function BookingModal({
                     loading ||
                     !formData.name ||
                     !formData.email ||
+                    !formData.phone ||
                     !selectedPackage
                   }
                   className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"

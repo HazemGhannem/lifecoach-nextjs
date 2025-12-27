@@ -7,9 +7,18 @@ import {
   deleteTimeSlot,
   updateTimeSlot,
 } from "@/lib/actions/timeslot.action";
-import { Plus, Trash2, Edit2, Calendar, Clock } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  Calendar,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Toast } from "../Toast";
 import ConfirmModal from "./ConfirmModal";
+import CalendarIcon from "../CalendarIcon";
 
 // Predefined time slots to choose from
 const PRESET_TIME_SLOTS = [
@@ -25,6 +34,8 @@ const PRESET_TIME_SLOTS = [
   { startTime: "17:00", endTime: "17:40" },
 ];
 
+const DATES_PER_PAGE = 5;
+
 export default function TimeSlotsAdmin() {
   const [timeSlots, setTimeSlots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +46,7 @@ export default function TimeSlotsAdmin() {
     type: "success" | "error";
   } | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // For bulk adding
   const [selectedDate, setSelectedDate] = useState("");
@@ -161,9 +173,11 @@ export default function TimeSlotsAdmin() {
       });
     }
   };
+
   const handleDeleteTimeSlot = (id: string) => {
-    setDeleteId(id); // opens the confirmation modal
+    setDeleteId(id);
   };
+
   const handleDelete = async () => {
     if (!deleteId) return;
 
@@ -172,23 +186,23 @@ export default function TimeSlotsAdmin() {
       if (success) {
         await fetchTimeSlots();
         setToast({
-          message: "caneaux supprimé avec succès !",
+          message: "Créneau supprimé avec succès !",
           type: "success",
         });
       } else {
         setToast({
-          message: "Échec de la suppression du caneaux.",
+          message: "Échec de la suppression du créneau.",
           type: "error",
         });
       }
     } catch (error) {
       console.error("Delete package error:", error);
       setToast({
-        message: "Erreur lors de la suppression du caneau.",
+        message: "Erreur lors de la suppression du créneau.",
         type: "error",
       });
     } finally {
-      setDeleteId(null); // close the confirmation modal
+      setDeleteId(null);
     }
   };
 
@@ -206,6 +220,21 @@ export default function TimeSlotsAdmin() {
     acc[slot.date].push(slot);
     return acc;
   }, {});
+
+  // Pagination for dates
+  const sortedDates = Object.keys(slotsByDate).sort().reverse();
+  const totalPages = Math.ceil(sortedDates.length / DATES_PER_PAGE);
+  const startIndex = (currentPage - 1) * DATES_PER_PAGE;
+  const endIndex = startIndex + DATES_PER_PAGE;
+  const paginatedDates = sortedDates.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
 
   return (
     <div className="pt-6 max-w-6xl mx-auto px-4">
@@ -232,7 +261,7 @@ export default function TimeSlotsAdmin() {
 
         <div className="space-y-4">
           {/* Date Selection */}
-          <div>
+          <div className="relative w-full md:w-1/2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               1. Sélectionnez la date
             </label>
@@ -240,8 +269,10 @@ export default function TimeSlotsAdmin() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full md:w-1/2 border-2 border-purple-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="border-2 border-purple-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800"
             />
+            {/* Custom black calendar icon */}
+            
           </div>
 
           {/* Time Slots Selection */}
@@ -393,7 +424,7 @@ export default function TimeSlotsAdmin() {
       {/* ============ EXISTING TIME SLOTS ============ */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Créneaux Existants
+          Créneaux Existants ({sortedDates.length} dates)
         </h2>
 
         {Object.keys(slotsByDate).length === 0 && !loading && (
@@ -408,110 +439,195 @@ export default function TimeSlotsAdmin() {
           </div>
         )}
 
-        {Object.keys(slotsByDate)
-          .sort()
-          .reverse()
-          .map((date) => (
-            <div key={date} className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">
-                {new Date(date + "T00:00:00").toLocaleDateString("fr-FR", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </h3>
+        {paginatedDates.map((date) => (
+          <div key={date} className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {new Date(date + "T00:00:00").toLocaleDateString("fr-FR", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </h3>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {slotsByDate[date]
-                  .sort((a: any, b: any) =>
-                    a.startTime.localeCompare(b.startTime)
-                  )
-                  .map((slot: any) => (
-                    <div
-                      key={slot._id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      {editingId === slot._id ? (
-                        /* EDIT MODE */
-                        <div className="w-full space-y-2">
-                          <div className="flex gap-2">
-                            <input
-                              type="time"
-                              defaultValue={slot.startTime}
-                              onChange={(e) =>
-                                (slot.startTime = e.target.value)
-                              }
-                              className="border rounded p-1 text-sm"
-                            />
-                            <input
-                              type="time"
-                              defaultValue={slot.endTime}
-                              onChange={(e) => (slot.endTime = e.target.value)}
-                              className="border rounded p-1 text-sm"
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                handleUpdate(slot._id, {
-                                  startTime: slot.startTime,
-                                  endTime: slot.endTime,
-                                })
-                              }
-                              className="px-3 py-1 bg-green-600 text-white text-xs rounded"
-                            >
-                              Sauvegarder
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="px-3 py-1 bg-gray-300 text-xs rounded"
-                            >
-                              Annuler
-                            </button>
-                          </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {slotsByDate[date]
+                .sort((a: any, b: any) =>
+                  a.startTime.localeCompare(b.startTime)
+                )
+                .map((slot: any) => (
+                  <div
+                    key={slot._id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    {editingId === slot._id ? (
+                      /* EDIT MODE */
+                      <div className="w-full space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="time"
+                            defaultValue={slot.startTime}
+                            onChange={(e) => (slot.startTime = e.target.value)}
+                            className="border rounded p-1 text-sm"
+                          />
+                          <input
+                            type="time"
+                            defaultValue={slot.endTime}
+                            onChange={(e) => (slot.endTime = e.target.value)}
+                            className="border rounded p-1 text-sm"
+                          />
                         </div>
-                      ) : (
-                        /* VIEW MODE */
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium text-sm">
-                              {slot.startTime} - {slot.endTime}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs ${
-                                slot.isAvailable
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {slot.isAvailable ? "✓" : "✗"}
-                            </span>
-                          </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              handleUpdate(slot._id, {
+                                startTime: slot.startTime,
+                                endTime: slot.endTime,
+                              })
+                            }
+                            className="px-3 py-1 bg-green-600 text-white text-xs rounded"
+                          >
+                            Sauvegarder
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="px-3 py-1 bg-gray-300 text-xs rounded"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* VIEW MODE */
+                      <>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-purple-600" />
+                          <span className="font-medium text-sm">
+                            {slot.startTime} - {slot.endTime}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs ${
+                              slot.isAvailable
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {slot.isAvailable ? "✓" : "✗"}
+                          </span>
+                        </div>
 
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => setEditingId(slot._id)}
-                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTimeSlot(slot._id)}
-                              className="p-1.5 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-              </div>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => setEditingId(slot._id)}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTimeSlot(slot._id)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
             </div>
-          ))}
+          </div>
+        ))}
+
+        {/* ============ PAGINATION ============ */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white rounded-lg shadow">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Page {currentPage} sur {totalPages} • Affichage {startIndex + 1} à{" "}
+              {Math.min(endIndex, sortedDates.length)} sur {sortedDates.length}
+            </div>
+            <div className="flex gap-2 items-center">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Précédent
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (pageNum) => {
+                    const isVisible =
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      Math.abs(pageNum - currentPage) <= 1;
+
+                    if (
+                      !isVisible &&
+                      pageNum !== 2 &&
+                      pageNum !== totalPages - 1
+                    ) {
+                      return null;
+                    }
+
+                    if (pageNum === 2 && currentPage > 3 && totalPages > 4) {
+                      return (
+                        <span
+                          key="ellipsis-start"
+                          className="px-2 py-1 text-gray-500 dark:text-gray-400"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+
+                    if (
+                      pageNum === totalPages - 1 &&
+                      currentPage < totalPages - 2 &&
+                      totalPages > 4
+                    ) {
+                      return (
+                        <span
+                          key="ellipsis-end"
+                          className="px-2 py-1 text-gray-500 dark:text-gray-400"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                          currentPage === pageNum
+                            ? "bg-purple-600 text-white"
+                            : "border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Suivant
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
       <ConfirmModal
         isOpen={!!deleteId}
         message="Voulez-vous vraiment supprimer ce créneau ?"

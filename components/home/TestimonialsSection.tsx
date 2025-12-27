@@ -4,7 +4,7 @@ const testimonials = [
   {
     name: "Guillemette Eichenlau",
     message:
-      "Marnie est une coach de vie douce et optimiste que je recommande vivement à toute personne ayant besoin d’un soutien sincère et bienveillant.",
+      "Léopoldine est une coach de vie douce et optimiste que je recommande vivement à toute personne ayant besoin d’un soutien sincère et bienveillant.",
   },
   {
     name: "Jean-Baptiste Marçon",

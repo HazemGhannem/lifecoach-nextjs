@@ -24,7 +24,7 @@ export default function Footer() {
               <Phone className="h-5 w-5" />
             </a>
             <a
-              href="https://facebook.com/leopoldinealmeida"
+              href="https://www.facebook.com/leopoldinealmeida"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center  hover:text-blue-600  transition-colors"

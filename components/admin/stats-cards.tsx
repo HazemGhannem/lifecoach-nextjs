@@ -1,5 +1,5 @@
-// components/admin/StatsCard.tsx
 import { LucideIcon } from "lucide-react";
+import CountUp from "react-countup";
 
 interface StatsCardProps {
   name: string;
@@ -20,7 +20,7 @@ export default function StatsCard({
         <div>
           <p className="text-sm text-gray-600 dark:text-gray-400">{name}</p>
           <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-            {value}
+            <CountUp end={value} duration={1.5} separator="," />
           </p>
         </div>
         <div className={`${color} p-3 rounded-lg`}>
