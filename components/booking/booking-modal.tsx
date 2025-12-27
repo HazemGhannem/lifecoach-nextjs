@@ -69,10 +69,11 @@ export default function BookingModal({
   const selectedPackageData = packages.find((p) => p._id === selectedPackage);
   const amount = selectedPackageData
     ? selectedPackageData.discount
-      ? selectedPackageData.price +
+      ? selectedPackageData.price -
         (selectedPackageData.price * selectedPackageData.discount) / 100
       : selectedPackageData.price
     : 0;
+
   const createOrder = async () => {
     const res = await fetch("/api/payment", {
       method: "POST",

@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { CheckCircle, XCircle } from "lucide-react";
-import { sendEmail } from "@/lib/email";
+import { sendEmailSupport } from "@/lib/email";
 import { render } from "@react-email/render";
 import { OwnerEmail } from "../emailTemplates/OwnerEmail";
 import { ClientEmail } from "../emailTemplates/ClientEmail";
@@ -37,16 +37,16 @@ export default function ContactForm() {
           dashboardUrl={`${process.env.NEXT_PUBLIC_WEB_DNS!}/admin/dashboard`}
         />
       );
-      const emailSendToOwner = await sendEmail({
-        to: `${process.env.NEXT_PUBLIC_SMTP_USER!}`,
+      const emailSendToOwner = await sendEmailSupport({
+        to: `${process.env.NEXT_PUBLIC_SMTP_USER_SUPPORT!}`,
         subject: "New Contact Message",
         html: await ownerHtml,
       });
 
-      const emailSentToUser = await sendEmail({
+      const emailSentToUser = await sendEmailSupport({
         to: formData.email,
         subject:
-          "Transformez Votre Avenir grâce à une Consultation Miraculeuse",
+          "Transformez Votre Avenir grâce à une Consultation sur votre mesure",
         html: await clientHtml,
       });
 
