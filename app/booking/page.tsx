@@ -145,7 +145,7 @@ export default function BookingPage() {
                       key={idx}
                       className="inline-flex items-center gap-2 bg-white px-3 py-1 rounded-full text-sm"
                     >
-                      <span>
+                      <span className="text-gray-700">
                         {slot.date} - {slot.time}
                       </span>
                       <button

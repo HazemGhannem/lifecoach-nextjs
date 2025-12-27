@@ -283,7 +283,7 @@ export default function BookingModal({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  className="block w-full pl-10 pr-3 py-3 border text-gray-700 border-gray-300 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   placeholder="Votre nom"
                 />
               </div>
@@ -306,7 +306,7 @@ export default function BookingModal({
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  className="block w-full pl-10 pr-3 py-3 border text-gray-700 border-gray-300 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   placeholder="votre@email.com"
                 />
               </div>
@@ -331,7 +331,7 @@ export default function BookingModal({
                       setFormData({ ...formData, phone: value });
                     }
                   }}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  className="block w-full pl-10 pr-3 text-gray-700 py-3 border border-gray-300 placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                   placeholder="+33 6 12 34 56 78"
                 />
               </div>
