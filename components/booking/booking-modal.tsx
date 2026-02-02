@@ -5,6 +5,7 @@ import { X, Calendar, Clock, User, Mail, Phone } from "lucide-react";
 import { usePackages } from "@/hooks/use-package";
 import { TimeSlot } from "@/hooks/use-bookings";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { useRouter } from "next/navigation";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export default function BookingModal({
   error = null,
   onSubmit,
 }: BookingModalProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -51,7 +53,11 @@ export default function BookingModal({
     if (success) {
       setFormData({ name: "", email: "", phone: "" });
     }
-  };
+    // Navigate to thank you page for free package
+    if (selectedPackageData?.name.toLowerCase() === "free") {
+      router.push("/thanks"); // or '/thank-you'
+    }
+  };;
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
