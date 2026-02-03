@@ -36,7 +36,7 @@ export default function BookingInfo() {
             />
             <a
               className="text-sm text-gray-700 hover:text-purple-600"
-              href="tel:+33123456789"
+              href="tel:+33758230354"
             >
               +33 758 230 354
             </a>
