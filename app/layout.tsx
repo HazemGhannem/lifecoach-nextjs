@@ -1,15 +1,16 @@
-import { Inter } from "next/font/google";
-import "./globals.css";
-import Navigation from "@/components/navigation";
-import { ThemeProvider } from "@/components/theme-provider";
-import { BookingProvider } from "@/context/BookingContext";
-import Footer from "@/components/Footer";
-import Script from "next/script";
+import { Inter } from 'next/font/google';
+import './globals.css';
+import Navigation from '@/components/navigation';
+import { ThemeProvider } from '@/components/theme-provider';
+import { BookingProvider } from '@/context/BookingContext';
+import Footer from '@/components/Footer';
+import Script from 'next/script';
+import { PostHogProvider } from '@/posthogs/PostHogProvider';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: "Léopoldine Almeida - Coach de Vie",
+  title: 'Léopoldine Almeida - Coach de Vie',
   description:
     "Coach de vie spécialisée dans l'accompagnement pour retrouver clarté, confiance et équilibre",
 };
@@ -50,11 +51,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <BookingProvider>
-            <Navigation />
+          <PostHogProvider>
+            <BookingProvider>
+              <Navigation />
 
-            <main>{children}</main>
-          </BookingProvider>
+              <main>{children}</main>
+            </BookingProvider>
+          </PostHogProvider>
           <Footer />
         </ThemeProvider>
       </body>

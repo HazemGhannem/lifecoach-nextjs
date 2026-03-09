@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { trackForm ,trackError,identify} = useAnalytics();
   const navigate = () => {
     router.push("/admin/forgot-password");
   };
@@ -23,13 +25,20 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
+      identify(data.user.id, {
+        email: data.user.email,
+        name: data.user.name,
+        plan: 'free',
+      });
       if (data.success) {
         router.push("/admin/dashboard");
+        trackForm('login_form', { success: true });
       } else {
         alert(data.message);
       }
     } catch (error) {
       console.error("Login error:", error);
+      trackError('login_failed', { email });
     } finally {
       setIsLoading(false); // stop loading
     }

@@ -1,10 +1,11 @@
-"use client";
-import Link from "next/link";
-import { CheckCircle, Loader2 } from "lucide-react";
-import { usePackages } from "@/hooks/use-package";
-import { useBookings } from "@/hooks/use-bookings";
-import { useRouter } from "next/navigation";
-import { useBooking } from "@/context/BookingContext";
+'use client';
+import Link from 'next/link';
+import { CheckCircle, Loader2 } from 'lucide-react';
+import { usePackages } from '@/hooks/use-package';
+import { useBookings } from '@/hooks/use-bookings';
+import { useRouter } from 'next/navigation';
+import { useBooking } from '@/context/BookingContext';
+import { useAnalytics } from '@/hooks/use-analytics';
 
 export interface Package {
   _id: string;
@@ -23,11 +24,23 @@ export default function PricingSection() {
   const router = useRouter();
   const { isLoading, error, packages } = usePackages();
   const { setMaxSessions, setSelectedPackage } = useBooking();
-
+  const { trackClick } = useAnalytics();
   const handleClick = (pkg: any) => {
     setMaxSessions(pkg.SeanceNumber);
     setSelectedPackage(pkg._id);
-    router.push("/booking");
+    const pricePerSession = pkg.discount
+    ? ((pkg.price * (1 - pkg.discount / 100)) / pkg.SeanceNumber).toFixed(2)
+    : (pkg.price / pkg.SeanceNumber).toFixed(2);
+      trackClick('tariff-clicked', {
+        location: 'tarif_section',
+        plan: pricePerSession,
+        packageId: pkg._id,
+        totalPrice: pkg.price,
+        sessions: pkg.SeanceNumber,
+        name: pkg.name,
+        discount: pkg.discount || 0,
+      });
+    router.push('/booking');
   };
   return (
     <div className="  py-20">
@@ -54,15 +67,15 @@ export default function PricingSection() {
               {packages
                 .filter((pkg) => !pkg.fullWidth)
                 .filter(
-                  (pkg) => !pkg.fullWidth && pkg.name.toLowerCase() !== "free"
+                  (pkg) => !pkg.fullWidth && pkg.name.toLowerCase() !== 'free',
                 )
                 .map((pkg) => (
                   <div
                     key={pkg._id}
                     className={`rounded-xl shadow-lg p-6 hover:shadow-2xl transition flex flex-col ${
                       pkg.highlighted
-                        ? "bg-gradient-to-br from-purple-600 to-pink-500 transform scale-105"
-                        : "bg-white   transform hover:-translate-y-1"
+                        ? 'bg-gradient-to-br from-purple-600 to-pink-500 transform scale-105'
+                        : 'bg-white   transform hover:-translate-y-1'
                     }`}
                   >
                     <div>
@@ -74,7 +87,7 @@ export default function PricingSection() {
                     </div>
                     <h3
                       className={`text-xl font-bold mb-2 ${
-                        pkg.highlighted ? "text-white" : "text-gray-800 "
+                        pkg.highlighted ? 'text-white' : 'text-gray-800 '
                       }`}
                     >
                       {pkg.name}
@@ -86,8 +99,8 @@ export default function PricingSection() {
                             <p
                               className={`text-lg font-semibold line-through opacity-60 ${
                                 pkg.highlighted
-                                  ? "text-white/70"
-                                  : "text-gray-400 "
+                                  ? 'text-white/70'
+                                  : 'text-gray-400 '
                               }`}
                             >
                               {pkg.price}€
@@ -95,8 +108,8 @@ export default function PricingSection() {
                             <span
                               className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                                 pkg.highlighted
-                                  ? "bg-white/20 text-white"
-                                  : "bg-red-100 text-red-600 "
+                                  ? 'bg-white/20 text-white'
+                                  : 'bg-red-100 text-red-600 '
                               }`}
                             >
                               -{pkg.discount}%
@@ -104,7 +117,7 @@ export default function PricingSection() {
                           </div>
                           <p
                             className={`text-3xl font-bold ${
-                              pkg.highlighted ? "text-white" : "text-purple-600"
+                              pkg.highlighted ? 'text-white' : 'text-purple-600'
                             }`}
                           >
                             {(pkg.price * (1 - pkg.discount / 100)).toFixed(2)}€
@@ -113,7 +126,7 @@ export default function PricingSection() {
                       ) : (
                         <p
                           className={`text-3xl font-bold ${
-                            pkg.highlighted ? "text-white" : "text-purple-600 "
+                            pkg.highlighted ? 'text-white' : 'text-purple-600 '
                           }`}
                         >
                           {pkg.price}€
@@ -123,7 +136,7 @@ export default function PricingSection() {
                     {pkg.SeanceNumber && (
                       <p
                         className={`text-sm mb-4 ${
-                          pkg.highlighted ? "text-white/80" : "text-gray-500"
+                          pkg.highlighted ? 'text-white/80' : 'text-gray-500'
                         }`}
                       >
                         {pkg.discount
@@ -138,7 +151,7 @@ export default function PricingSection() {
                     {pkg.duration && (
                       <p
                         className={`text-sm mb-4 ${
-                          pkg.highlighted ? "text-white/80" : "text-gray-500"
+                          pkg.highlighted ? 'text-white/80' : 'text-gray-500'
                         }`}
                       >
                         {pkg.duration}
@@ -149,12 +162,12 @@ export default function PricingSection() {
                         <li key={idx} className="flex items-start text-sm">
                           <CheckCircle
                             className={`h-4 w-4 mr-2 mt-0.5 flex-shrink-0 ${
-                              pkg.highlighted ? "text-white" : "text-purple-600"
+                              pkg.highlighted ? 'text-white' : 'text-purple-600'
                             }`}
                           />
                           <span
                             className={
-                              pkg.highlighted ? "text-white" : "text-gray-600"
+                              pkg.highlighted ? 'text-white' : 'text-gray-600'
                             }
                           >
                             {feature}
@@ -164,10 +177,10 @@ export default function PricingSection() {
                     </ul>
                     <button
                       onClick={() => handleClick(pkg)}
-                      className={`block w-full text-center py-2.5 rounded-lg transition font-semibold text-sm ${
+                      className={`block w-full text-center py-2.5 rounded-lg transition font-semibold text-sm cursor-pointer ${
                         pkg.highlighted
-                          ? "bg-white text-purple-600 hover:bg-purple-100"
-                          : "bg-purple-600 text-white hover:bg-purple-700 "
+                          ? 'bg-white text-purple-600 hover:bg-purple-100'
+                          : 'bg-purple-600 text-white hover:bg-purple-700 '
                       }`}
                     >
                       Réserver
