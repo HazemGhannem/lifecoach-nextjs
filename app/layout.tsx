@@ -6,6 +6,7 @@ import { BookingProvider } from '@/context/BookingContext';
 import Footer from '@/components/Footer';
 import Script from 'next/script';
 import { PostHogProvider } from '@/posthogs/PostHogProvider';
+import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -51,13 +52,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <PostHogProvider>
-            <BookingProvider>
-              <Navigation />
+          <Suspense fallback={null}>
+            <PostHogProvider>
+              <BookingProvider>
+                <Navigation />
 
-              <main>{children}</main>
-            </BookingProvider>
-          </PostHogProvider>
+                <main>{children}</main>
+              </BookingProvider>
+            </PostHogProvider>
+          </Suspense>
           <Footer />
         </ThemeProvider>
       </body>
